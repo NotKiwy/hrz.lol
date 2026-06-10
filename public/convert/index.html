@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Image Converter Online – hrz.lol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+a { -webkit-tap-highlight-color: transparent; }
+a:focus { outline: none; }
+a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+:root {
+  --bg:      #faf8f3;
+  --white:   #ffffff;
+  --ink:     #111111;
+  --muted:   #777770;
+  --subtle:  #c4c2ba;
+  --surface: #f3f0e8;
+  --accent:  #f0c040;
+  --green:   #4ade80;
+  --radius:  18px;
+  --border:  2.5px solid #111111;
+  --font:    'Nunito', sans-serif;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px 48px;
+}
+
+header {
+  width: 100%; max-width: 600px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 28px 0 32px;
+  animation: fadeUp .4s ease both;
+}
+
+.logo { font-size: 22px; font-weight: 900; letter-spacing: -0.04em; text-decoration: none; color: var(--ink); }
+.logo span { color: var(--muted); font-weight: 700; }
+
+.nav-link {
+  font-size: 12px; font-weight: 800; color: var(--muted); text-decoration: none;
+  display: inline-flex; align-items: center; padding: 4px 12px;
+  border: 2px solid var(--subtle); border-radius: 999px;
+  transition: border-color .15s, color .15s;
+}
+.nav-link:hover { border-color: var(--ink); color: var(--ink); }
+
+.card {
+  width: 100%; max-width: 600px;
+  background: var(--white);
+  border: var(--border); border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 4px 6px 0 #111;
+  animation: fadeUp .4s .06s ease both;
+}
+
+.card-body { padding: 32px 32px 28px; }
+.card-title { font-size: 26px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 4px; }
+.card-sub   { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 28px; }
+
+.drop-zone {
+  border: 2.5px dashed var(--subtle);
+  border-radius: 14px;
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s, transform .15s;
+  margin-bottom: 24px;
+  position: relative;
+  background: var(--bg);
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--ink);
+  background: #f5f2e8;
+  transform: scale(1.01);
+}
+.drop-zone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+
+.drop-icon {
+  font-size: 36px; line-height: 1; margin-bottom: 10px;
+  opacity: .35;
+}
+.drop-text { font-size: 15px; font-weight: 800; color: var(--muted); }
+.drop-sub  { font-size: 12px; font-weight: 600; color: var(--subtle); margin-top: 4px; }
+
+.file-preview {
+  display: none;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  margin-bottom: 24px;
+  animation: fadeUp .3s ease both;
+}
+.file-preview.show { display: flex; }
+
+.preview-thumb {
+  width: 52px; height: 52px;
+  border-radius: 8px;
+  border: 2px solid #ddd9ce;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #eee;
+}
+
+.preview-info { flex: 1; min-width: 0; }
+.preview-name { font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.preview-size { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+
+.btn-clear {
+  background: none; border: none; cursor: pointer; color: var(--subtle);
+  font-size: 18px; line-height: 1; padding: 4px; transition: color .15s;
+  flex-shrink: 0;
+}
+.btn-clear:hover { color: var(--ink); }
+
+.section-label {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+}
+
+.format-grid {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 24px;
+}
+
+.fmt-btn {
+  padding: 7px 16px;
+  border: 2px solid var(--subtle);
+  border-radius: 999px;
+  font-family: var(--font);
+  font-size: 12px; font-weight: 900;
+  cursor: pointer; background: var(--bg);
+  color: var(--muted);
+  transition: border-color .15s, color .15s, background .15s, transform .12s;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.fmt-btn:hover   { border-color: var(--ink); color: var(--ink); }
+.fmt-btn.active  {
+  background: var(--ink); border-color: var(--ink);
+  color: var(--white);
+  transform: scale(1.05);
+}
+
+.quality-wrap {
+  margin-bottom: 24px;
+  transition: opacity .2s;
+}
+.quality-wrap.hidden { opacity: .3; pointer-events: none; }
+
+.quality-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.quality-val { font-size: 15px; font-weight: 900; }
+
+input[type="range"] {
+  width: 100%; height: 6px; appearance: none; -webkit-appearance: none;
+  background: var(--surface); border-radius: 999px; outline: none;
+  border: 2px solid #ddd9ce; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none; -webkit-appearance: none;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--ink); border: 2.5px solid var(--white);
+  box-shadow: 0 0 0 2px var(--ink);
+  cursor: pointer; transition: transform .15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+.card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 32px 24px;
+  border-top: 2px solid #eeebe2; background: var(--bg);
+}
+
+.btn-convert {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 30px;
+  background: var(--accent); color: var(--ink);
+  border: 2px solid var(--ink); border-radius: 999px;
+  font-family: var(--font); font-size: 14px; font-weight: 900;
+  cursor: pointer; letter-spacing: -0.01em;
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+  box-shadow: 3px 4px 0 var(--ink);
+}
+.btn-convert:hover   { transform: translateY(-2px); box-shadow: 4px 7px 0 var(--ink); }
+.btn-convert:active  { transform: scale(.97); box-shadow: 2px 2px 0 var(--ink); }
+.btn-convert:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: 3px 4px 0 var(--ink); }
+
+.size-hint { font-size: 12px; font-weight: 700; color: var(--subtle); }
+
+.error-bar {
+  display: none; align-items: center; gap: 10px;
+  padding: 11px 16px; margin-bottom: 16px;
+  background: #fff0f0; border: 2px solid #e87070; border-radius: 12px;
+  font-size: 13px; font-weight: 700; color: #c03030;
+}
+.error-bar.show { display: flex; }
+
+.result-banner {
+  display: none;
+  align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 18px; margin-bottom: 16px;
+  background: #f0faf4;
+  border: 2.5px solid var(--ink); border-radius: 14px;
+  animation: pop .35s cubic-bezier(.34,1.56,.64,1) both;
+}
+.result-banner.show { display: flex; }
+
+.result-info { display: flex; flex-direction: column; gap: 2px; }
+.result-label { font-size: 13px; font-weight: 900; }
+.result-sizes { font-size: 11px; font-weight: 600; color: var(--muted); }
+
+.btn-download {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 18px;
+  background: var(--ink); color: var(--white);
+  border: 2px solid var(--ink); border-radius: 999px;
+  font-family: var(--font); font-size: 12px; font-weight: 900;
+  cursor: pointer; text-decoration: none;
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s;
+  box-shadow: 2px 3px 0 #555;
+  white-space: nowrap;
+}
+.btn-download:hover   { transform: translateY(-2px); box-shadow: 3px 5px 0 #555; }
+.btn-download:active  { transform: scale(.97); }
+
+.spinner {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2.5px solid rgba(0,0,0,.15); border-top-color: var(--ink);
+  border-radius: 50%; animation: spin .6s linear infinite;
+}
+@keyframes spin   { to { transform: rotate(360deg); } }
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+@keyframes pop    { from { opacity:0; transform:scale(.92); } to { opacity:1; transform:scale(1); } }
+
+@media (max-width: 600px) {
+  .page { padding: 0 14px 36px; }
+  header { padding: 18px 0 20px; }
+  .card-body { padding: 22px 18px 18px; }
+  .card-title { font-size: 22px; }
+  .card-footer { padding: 14px 18px 18px; flex-wrap: wrap; gap: 10px; }
+  .btn-convert { width: 100%; justify-content: center; border-radius: 12px; }
+  .drop-zone { padding: 28px 16px; }
+  .result-banner { flex-wrap: wrap; }
+  .btn-download { width: 100%; justify-content: center; }
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/conv.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/conv.png">
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+    <a class="nav-link" href="/">all tools</a>
+  </header>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="card-title">convert image</div>
+      <div class="card-sub">jpg, png, webp, avif, tiff, gif &mdash; up to 25 mb</div>
+
+      <div class="error-bar" id="errorBar"><span id="errorMsg"></span></div>
+      <div class="result-banner" id="resultBanner">
+        <div class="result-info">
+          <div class="result-label" id="resultLabel">converted</div>
+          <div class="result-sizes" id="resultSizes"></div>
+        </div>
+        <a class="btn-download" id="downloadBtn">download</a>
+      </div>
+
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/*">
+        <div class="drop-icon">&#8659;</div>
+        <div class="drop-text">drop image here or click to browse</div>
+        <div class="drop-sub">jpg &middot; png &middot; webp &middot; avif &middot; gif &middot; tiff &middot; bmp</div>
+      </div>
+
+      <div class="file-preview" id="filePreview">
+        <img class="preview-thumb" id="previewThumb" src="" alt="">
+        <div class="preview-info">
+          <div class="preview-name" id="previewName"></div>
+          <div class="preview-size" id="previewSize"></div>
+        </div>
+        <button class="btn-clear" id="clearBtn" title="Remove file">&times;</button>
+      </div>
+
+      <div class="section-label">output format</div>
+      <div class="format-grid" id="formatGrid">
+        <button class="fmt-btn" data-fmt="jpg">JPG</button>
+        <button class="fmt-btn active" data-fmt="webp">WebP</button>
+        <button class="fmt-btn" data-fmt="png">PNG</button>
+        <button class="fmt-btn" data-fmt="avif">AVIF</button>
+        <button class="fmt-btn" data-fmt="tiff">TIFF</button>
+        <button class="fmt-btn" data-fmt="gif">GIF</button>
+      </div>
+
+      <div class="quality-wrap" id="qualityWrap">
+        <div class="quality-row">
+          <div class="section-label" style="margin:0">quality</div>
+          <div class="quality-val" id="qualityVal">80</div>
+        </div>
+        <input type="range" id="qualitySlider" min="1" max="100" value="80">
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <div class="size-hint">max 25 mb &middot; processed server-side</div>
+      <button class="btn-convert" id="convertBtn" onclick="convert()" disabled>
+        <span id="btnContent">convert</span>
+        <span id="btnArrow">&#8594;</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const dropZone    = document.getElementById('dropZone');
+const fileInput   = document.getElementById('fileInput');
+const filePreview = document.getElementById('filePreview');
+const previewThumb= document.getElementById('previewThumb');
+const previewName = document.getElementById('previewName');
+const previewSize = document.getElementById('previewSize');
+const clearBtn    = document.getElementById('clearBtn');
+const formatGrid  = document.getElementById('formatGrid');
+const qualityWrap = document.getElementById('qualityWrap');
+const qualitySlider=document.getElementById('qualitySlider');
+const qualityVal  = document.getElementById('qualityVal');
+const convertBtn  = document.getElementById('convertBtn');
+const btnContent  = document.getElementById('btnContent');
+const btnArrow    = document.getElementById('btnArrow');
+const errorBar    = document.getElementById('errorBar');
+const errorMsg    = document.getElementById('errorMsg');
+const resultBanner= document.getElementById('resultBanner');
+const resultLabel = document.getElementById('resultLabel');
+const resultSizes = document.getElementById('resultSizes');
+const downloadBtn = document.getElementById('downloadBtn');
+
+const NO_QUALITY  = new Set(['png', 'gif', 'tiff']);
+
+let selectedFile  = null;
+let selectedFmt   = 'webp';
+
+function fmt(bytes) {
+  if (bytes < 1024)         return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function setFile(file) {
+  selectedFile = file;
+  previewName.textContent = file.name;
+  previewSize.textContent = fmt(file.size);
+  const url = URL.createObjectURL(file);
+  previewThumb.src = url;
+  dropZone.style.display  = 'none';
+  filePreview.classList.add('show');
+  resultBanner.classList.remove('show');
+  errorBar.classList.remove('show');
+  convertBtn.disabled = false;
+}
+
+function clearFile() {
+  selectedFile = null;
+  fileInput.value = '';
+  filePreview.classList.remove('show');
+  dropZone.style.display = '';
+  convertBtn.disabled = true;
+  resultBanner.classList.remove('show');
+}
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) setFile(fileInput.files[0]);
+});
+
+clearBtn.addEventListener('click', clearFile);
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file?.type.startsWith('image/')) setFile(file);
+  else showError('only image files are supported');
+});
+
+formatGrid.querySelectorAll('.fmt-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    formatGrid.querySelectorAll('.fmt-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedFmt = btn.dataset.fmt;
+    qualityWrap.classList.toggle('hidden', NO_QUALITY.has(selectedFmt));
+  });
+});
+
+qualitySlider.addEventListener('input', () => {
+  qualityVal.textContent = qualitySlider.value;
+});
+
+function showError(msg) {
+  errorMsg.textContent = msg;
+  errorBar.classList.add('show');
+}
+
+async function convert() {
+  if (!selectedFile) return;
+  errorBar.classList.remove('show');
+  resultBanner.classList.remove('show');
+  convertBtn.disabled = true;
+  btnContent.innerHTML = '<span class="spinner"></span>';
+  btnArrow.style.visibility = 'hidden';
+
+  try {
+    const fd = new FormData();
+    fd.append('file', selectedFile);
+    fd.append('format', selectedFmt);
+    fd.append('quality', qualitySlider.value);
+
+    const res = await fetch('/api/convert', { method: 'POST', body: fd });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      showError(data.error || 'conversion failed');
+      return;
+    }
+
+    const blob    = await res.blob();
+    const origSize= parseInt(res.headers.get('X-Original-Size') || selectedFile.size);
+    const outSize = parseInt(res.headers.get('X-Output-Size')   || blob.size);
+    const saved   = origSize > outSize
+      ? ' • saved ' + fmt(origSize - outSize) + ' (' + Math.round((1 - outSize/origSize)*100) + '%)'
+      : '';
+
+    const ext  = selectedFmt === 'jpg' ? 'jpg' : selectedFmt;
+    const name = selectedFile.name.replace(/\.[^.]+$/, '') + '.' + ext;
+    const url  = URL.createObjectURL(blob);
+
+    downloadBtn.href     = url;
+    downloadBtn.download = name;
+    resultLabel.textContent = name;
+    resultSizes.textContent = fmt(origSize) + ' → ' + fmt(outSize) + saved;
+    resultBanner.classList.add('show');
+
+    downloadBtn.click();
+
+  } catch {
+    showError('network error – try again');
+  } finally {
+    convertBtn.disabled = false;
+    btnContent.textContent = 'convert';
+    btnArrow.style.visibility = '';
+  }
+}
+</script>
+</body>
+</html>

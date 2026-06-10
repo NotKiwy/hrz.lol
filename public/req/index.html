@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTP Client – Send Requests – hrz.lol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent}a:focus{outline:none}a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow-x:hidden}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 48px}
+header{width:100%;max-width:820px;display:flex;align-items:center;justify-content:space-between;padding:24px 0 28px;animation:fadeUp .4s ease both}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--muted)}
+.nav-link{font-size:12px;font-weight:800;color:var(--muted);text-decoration:none;padding:4px 12px;border:2px solid var(--subtle);border-radius:999px;transition:border-color .15s,color .15s}
+.nav-link:hover{border-color:var(--ink);color:var(--ink)}
+
+.wrap{width:100%;max-width:820px;display:flex;flex-direction:column;gap:16px;animation:fadeUp .4s .06s ease both}
+
+.req-card{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:3px 4px 0 var(--ink)}
+.url-row{display:flex;gap:0;border-bottom:2px solid var(--subtle);position:relative}
+.method-wrap{position:relative;border-right:2px solid var(--subtle)}
+.method-btn{display:flex;align-items:center;gap:6px;padding:12px 14px;font-family:var(--mono);font-size:12px;font-weight:700;background:var(--surface);color:var(--ink);border:none;cursor:pointer;white-space:nowrap;min-width:90px;justify-content:space-between}
+.method-btn:hover{background:#ece9e0}
+.method-arrow{font-size:9px;color:var(--muted);transition:transform .15s}
+.method-arrow.open{transform:rotate(180deg)}
+.method-drop{position:absolute;top:100%;left:-2px;z-index:100;background:var(--white);border:2px solid var(--ink);border-radius:10px;overflow:hidden;box-shadow:3px 4px 0 var(--ink);display:none;min-width:110px}
+.method-drop.open{display:block}
+.method-opt{display:block;width:100%;padding:8px 14px;font-family:var(--mono);font-size:12px;font-weight:700;background:transparent;border:none;text-align:left;cursor:pointer;color:var(--ink);transition:background .1s}
+.method-opt:hover{background:var(--surface)}
+.method-opt.selected{background:var(--accent)}
+.url-input{flex:1;padding:12px 16px;border:none;font-family:var(--mono);font-size:13px;background:var(--white);color:var(--ink);outline:none}
+.url-input::placeholder{color:var(--subtle)}
+.send-btn{padding:0 24px;background:var(--accent);color:var(--ink);border:none;border-left:2px solid var(--ink);font-family:var(--font);font-size:13px;font-weight:900;cursor:pointer;transition:background .15s;white-space:nowrap}
+.send-btn:hover{background:#e8b430}
+.send-btn:disabled{opacity:.5;cursor:not-allowed}
+
+.req-tabs{display:flex;gap:0;border-bottom:2px solid var(--subtle)}
+.req-tab{padding:9px 18px;font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;background:transparent;border:none;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s}
+.req-tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+.req-tab-panel{padding:16px 18px;display:none}
+.req-tab-panel.active{display:block}
+
+.headers-list{display:flex;flex-direction:column;gap:8px}
+.header-row{display:grid;grid-template-columns:1fr 1fr 28px;gap:6px;align-items:center}
+.header-row input{padding:7px 10px;border:1.5px solid var(--subtle);border-radius:8px;font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--ink);outline:none;transition:border-color .15s}
+.header-row input:focus{border-color:var(--ink)}
+.header-row input::placeholder{color:var(--subtle)}
+.rm-btn{width:28px;height:28px;border:1.5px solid var(--subtle);border-radius:6px;font-size:14px;cursor:pointer;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .1s}
+.rm-btn:hover{border-color:#e74c3c;color:#e74c3c}
+.add-header-btn{font-size:12px;font-weight:800;color:var(--muted);cursor:pointer;background:none;border:none;padding:4px 0;margin-top:4px}
+.add-header-btn:hover{color:var(--ink)}
+
+.body-ta{width:100%;min-height:120px;padding:12px 14px;border:1.5px solid var(--subtle);border-radius:10px;font-family:var(--mono);font-size:12px;line-height:1.6;background:var(--bg);color:var(--ink);outline:none;resize:vertical;transition:border-color .15s}
+.body-ta:focus{border-color:var(--ink)}
+.body-ta::placeholder{color:var(--subtle)}
+
+.res-card{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:3px 4px 0 var(--ink);display:none}
+.res-card.show{display:block}
+.res-head{display:flex;align-items:center;gap:14px;padding:12px 18px;background:var(--surface);border-bottom:2px solid var(--ink);flex-wrap:wrap}
+.status-badge{padding:4px 12px;border-radius:999px;font-size:12px;font-weight:800}
+.s-2xx{background:#d5f5e3;border:1.5px solid #27ae60;color:#1a7a41}
+.s-3xx{background:#dbeafe;border:1.5px solid #3b82f6;color:#1e3a5f}
+.s-4xx{background:#fef3cd;border:1.5px solid #f0c040;color:#7d6000}
+.s-5xx{background:#fadbd8;border:1.5px solid #e74c3c;color:#b03030}
+.elapsed-badge{font-size:12px;font-weight:700;color:var(--muted)}
+.copy-btn{margin-left:auto;padding:3px 10px;border:1.5px solid var(--subtle);border-radius:6px;font-family:var(--font);font-size:10px;font-weight:800;cursor:pointer;background:transparent;color:var(--muted);transition:all .1s}
+.copy-btn:hover{border-color:var(--ink);color:var(--ink)}
+.copy-btn.ok{border-color:#4caf50;color:#2e7d32}
+
+.res-tabs{display:flex;gap:0;border-bottom:2px solid var(--subtle)}
+.res-tab{padding:8px 16px;font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;background:transparent;border:none;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s}
+.res-tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+.res-tab-panel{display:none}
+.res-tab-panel.active{display:block}
+pre{padding:16px 18px;font-family:var(--mono);font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:500px;overflow-y:auto}
+
+.headers-table{width:100%;border-collapse:collapse}
+.headers-table td{padding:8px 18px;font-family:var(--mono);font-size:12px;border-bottom:1px solid #eeebe2}
+.headers-table td:first-child{font-weight:700;color:#1a5fa8;width:40%}
+.truncated-note{padding:8px 18px;font-size:11px;font-weight:700;color:var(--muted);border-top:1px solid #eeebe2}
+
+.j-key{color:#1a5fa8;font-weight:600}.j-str{color:#1a7a41}.j-num{color:#b7590a;font-weight:700}.j-bool{color:#6c3483;font-weight:700}.j-null{color:#c0392b;font-weight:700}
+
+.spinner{display:inline-block;width:12px;height:12px;border:2.5px solid rgba(0,0,0,.2);border-top-color:var(--ink);border-radius:50%;animation:spin .6s linear infinite;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media(max-width:600px){
+  .page{padding:0 14px 36px}
+  header{padding:18px 0 20px}
+  .method-btn{min-width:80px}
+  .header-row{grid-template-columns:1fr 1fr 28px}
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/req.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/req.png">
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+    <a class="nav-link" href="//hrz.lol">all tools</a>
+  </header>
+
+  <div class="wrap">
+    <div class="req-card">
+      <div class="url-row">
+        <div class="method-wrap">
+          <button class="method-btn" id="methodBtn" onclick="toggleMethodDrop(event)">
+            <span id="methodLabel">GET</span>
+            <span class="method-arrow" id="methodArrow">▼</span>
+          </button>
+          <div class="method-drop" id="methodDrop">
+            <button class="method-opt selected" onclick="selectMethod('GET',this)">GET</button>
+            <button class="method-opt" onclick="selectMethod('POST',this)">POST</button>
+            <button class="method-opt" onclick="selectMethod('PUT',this)">PUT</button>
+            <button class="method-opt" onclick="selectMethod('PATCH',this)">PATCH</button>
+            <button class="method-opt" onclick="selectMethod('DELETE',this)">DELETE</button>
+            <button class="method-opt" onclick="selectMethod('HEAD',this)">HEAD</button>
+            <button class="method-opt" onclick="selectMethod('OPTIONS',this)">OPTIONS</button>
+          </div>
+        </div>
+        <input class="url-input" type="text" id="urlInput" placeholder="https://api.example.com/endpoint" spellcheck="false" autocomplete="off">
+        <button class="send-btn" id="sendBtn" onclick="sendReq()">send</button>
+      </div>
+
+      <div class="req-tabs">
+        <button class="req-tab active" onclick="switchReqTab(this,'headers')">headers</button>
+        <button class="req-tab" onclick="switchReqTab(this,'body')">body</button>
+      </div>
+
+      <div class="req-tab-panel active" id="panel-headers">
+        <div class="headers-list" id="headersList"></div>
+        <button class="add-header-btn" onclick="addHeader()">+ add header</button>
+      </div>
+      <div class="req-tab-panel" id="panel-body">
+        <textarea class="body-ta" id="bodyInput" placeholder='{"key": "value"}'></textarea>
+      </div>
+    </div>
+
+    <div class="res-card" id="resCard">
+      <div class="res-head">
+        <span class="status-badge" id="statusBadge"></span>
+        <span class="elapsed-badge" id="elapsedBadge"></span>
+        <button class="copy-btn" id="copyResBtn" onclick="copyRes()">copy body</button>
+      </div>
+      <div class="res-tabs">
+        <button class="res-tab active" onclick="switchResTab(this,'body')">body</button>
+        <button class="res-tab" onclick="switchResTab(this,'headers')">response headers</button>
+      </div>
+      <div class="res-tab-panel active" id="res-body">
+        <pre id="resBody"></pre>
+        <div class="truncated-note" id="truncNote" style="display:none">response truncated at 512 KB</div>
+      </div>
+      <div class="res-tab-panel" id="res-headers">
+        <table class="headers-table" id="resHeaders"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentMethod = 'GET';
+const defaultHeaders = [{ k: 'Accept', v: 'application/json' }];
+let headerCount = 0;
+
+function toggleMethodDrop(e) {
+  e.stopPropagation();
+  const drop = document.getElementById('methodDrop');
+  const arrow = document.getElementById('methodArrow');
+  const open = drop.classList.toggle('open');
+  arrow.classList.toggle('open', open);
+}
+
+function selectMethod(m, el) {
+  currentMethod = m;
+  document.getElementById('methodLabel').textContent = m;
+  document.getElementById('methodDrop').classList.remove('open');
+  document.getElementById('methodArrow').classList.remove('open');
+  document.querySelectorAll('.method-opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('methodDrop').classList.remove('open');
+  document.getElementById('methodArrow').classList.remove('open');
+});
+
+function addHeader(k = '', v = '') {
+  const id = ++headerCount;
+  const row = document.createElement('div');
+  row.className = 'header-row';
+  row.id = 'hr-' + id;
+  row.innerHTML = `<input type="text" placeholder="Header-Name" value="${esc(k)}" class="hk">
+    <input type="text" placeholder="value" value="${esc(v)}" class="hv">
+    <button class="rm-btn" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('headersList').appendChild(row);
+}
+
+defaultHeaders.forEach(h => addHeader(h.k, h.v));
+
+function switchReqTab(btn, panel) {
+  document.querySelectorAll('.req-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.req-tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + panel).classList.add('active');
+}
+
+function switchResTab(btn, panel) {
+  document.querySelectorAll('.res-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.res-tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('res-' + panel).classList.add('active');
+}
+
+async function sendReq() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) return;
+
+  const method = currentMethod;
+  const bodyText = document.getElementById('bodyInput').value.trim();
+
+  const headers = {};
+  document.querySelectorAll('.header-row').forEach(row => {
+    const k = row.querySelector('.hk').value.trim();
+    const v = row.querySelector('.hv').value.trim();
+    if (k && v) headers[k] = v;
+  });
+
+  const sendBtn = document.getElementById('sendBtn');
+  sendBtn.disabled = true;
+  sendBtn.innerHTML = '<span class="spinner"></span>sending';
+
+  try {
+    const payload = { method, url, headers };
+    if (bodyText && !['GET','HEAD','OPTIONS'].includes(method)) payload.body = bodyText;
+
+    const res = await fetch('/api/req', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showError(data.error || 'request failed');
+      return;
+    }
+
+    showResponse(data);
+  } catch {
+    showError('network error');
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'send';
+  }
+}
+
+function showError(msg) {
+  const card = document.getElementById('resCard');
+  document.getElementById('statusBadge').className = 'status-badge s-5xx';
+  document.getElementById('statusBadge').textContent = 'error';
+  document.getElementById('elapsedBadge').textContent = '';
+  document.getElementById('resBody').textContent = msg;
+  document.getElementById('truncNote').style.display = 'none';
+  document.getElementById('resHeaders').innerHTML = '';
+  card.classList.add('show');
+}
+
+function showResponse(data) {
+  const card = document.getElementById('resCard');
+  const s = data.status;
+  const cls = s >= 500 ? 's-5xx' : s >= 400 ? 's-4xx' : s >= 300 ? 's-3xx' : 's-2xx';
+  document.getElementById('statusBadge').className = 'status-badge ' + cls;
+  document.getElementById('statusBadge').textContent = s + ' ' + (data.statusText || '');
+  document.getElementById('elapsedBadge').textContent = data.elapsed + 'ms';
+
+  const body = typeof data.body === 'object' ? data.body : data.body;
+  const bodyStr = typeof body === 'object' ? JSON.stringify(body, null, 2) : String(body || '');
+  window._lastResBody = bodyStr;
+
+  document.getElementById('resBody').innerHTML = typeof data.body === 'object'
+    ? syntaxHighlight(data.body) : escHtml(bodyStr);
+  document.getElementById('truncNote').style.display = data.truncated ? 'block' : 'none';
+
+  const hdrs = Object.entries(data.headers || {}).map(([k, v]) =>
+    `<tr><td>${escHtml(k)}</td><td>${escHtml(String(v))}</td></tr>`).join('');
+  document.getElementById('resHeaders').innerHTML = hdrs;
+
+  card.classList.add('show');
+}
+
+function copyRes() {
+  const val = window._lastResBody || '';
+  navigator.clipboard.writeText(val);
+  const btn = document.getElementById('copyResBtn');
+  btn.textContent = 'copied!';
+  btn.classList.add('ok');
+  setTimeout(() => { btn.textContent = 'copy body'; btn.classList.remove('ok'); }, 2000);
+}
+
+function syntaxHighlight(obj) {
+  const json = JSON.stringify(obj, null, 2);
+  const safe = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return safe.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+    if (/^"/.test(match)) {
+      if (/:$/.test(match)) return `<span class="j-key">${match}</span>`;
+      return `<span class="j-str">${match}</span>`;
+    }
+    if (/true|false/.test(match)) return `<span class="j-bool">${match}</span>`;
+    if (/null/.test(match)) return `<span class="j-null">${match}</span>`;
+    return `<span class="j-num">${match}</span>`;
+  });
+}
+
+function esc(s) { return String(s).replace(/"/g, '&quot;'); }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+document.getElementById('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendReq();
+});
+</script>
+</body>
+</html>

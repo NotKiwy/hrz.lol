@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hrz.lol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #faf8f3;
+  --white:   #ffffff;
+  --ink:     #111111;
+  --muted:   #777770;
+  --subtle:  #c4c2ba;
+  --surface: #f3f0e8;
+  --accent:  #f0c040;
+  --radius:  18px;
+  --border:  2.5px solid #111111;
+  --font:    'Nunito', sans-serif;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+.star {
+  position: fixed;
+  background: var(--ink);
+  opacity: 0.07;
+  pointer-events: none;
+  z-index: 0;
+  clip-path: polygon(50% 0%,53% 47%,100% 50%,53% 53%,50% 100%,47% 53%,0% 50%,47% 47%);
+}
+.star-1 { width: 120px; height: 80px;  top: 7%;    left: 6%;   }
+.star-2 { width: 70px;  height: 46px;  top: 15%;   right: 8%;  }
+.star-3 { width: 160px; height: 106px; bottom: 10%; right: 5%;  }
+.star-4 { width: 55px;  height: 36px;  bottom: 20%; left: 10%; }
+
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px 48px;
+}
+
+header {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0 28px;
+  gap: 12px;
+  animation: fadeUp .4s ease both;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-decoration: none;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+.logo span { color: var(--muted); font-weight: 700; }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s, background .15s;
+  text-decoration: none;
+  background: var(--white);
+  color: var(--ink);
+  box-shadow: 2px 3px 0 var(--ink);
+  letter-spacing: -0.01em;
+}
+.btn:hover  { transform: translateY(-2px); box-shadow: 3px 5px 0 var(--ink); }
+.btn:active { transform: scale(.97);       box-shadow: 1px 2px 0 var(--ink); }
+
+.btn.primary { background: var(--accent); }
+
+.btn.success {
+  background: #e8f5e9;
+  border-color: #4caf50;
+  color: #2e7d32;
+  box-shadow: 2px 3px 0 #4caf50;
+}
+
+.content {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.paste-header {
+  background: var(--white);
+  border: var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 22px 28px 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  animation: fadeUp .4s .05s ease both;
+  flex-wrap: wrap;
+}
+
+.paste-title-wrap { display: flex; flex-direction: column; gap: 8px; }
+
+.paste-title {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  word-break: break-word;
+}
+.paste-title.untitled { color: var(--muted); font-weight: 700; }
+
+.paste-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border: 2px solid #e0ddd4;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  background: var(--bg);
+  letter-spacing: 0.02em;
+}
+
+.meta-chip.lang {
+  border-color: var(--ink);
+  color: var(--ink);
+  background: var(--accent);
+}
+
+.code-card {
+  background: var(--white);
+  border: var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  overflow: hidden;
+  animation: fadeUp .4s .1s ease both;
+}
+
+.code-scroll { overflow-x: auto; }
+
+.code-table {
+  display: table;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.code-line { display: table-row; }
+.code-line:hover .ln { color: var(--muted); background: #faf8f0; }
+.code-line:hover .lc { background: #fffbf0; }
+
+.ln {
+  display: table-cell;
+  padding: 0 14px 0 16px;
+  text-align: right;
+  color: var(--subtle);
+  font-family: 'Nunito', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  user-select: none;
+  white-space: nowrap;
+  vertical-align: top;
+  border-right: 2px solid #eeebe2;
+  background: var(--surface);
+  width: 1%;
+  transition: color .1s, background .1s;
+}
+
+.lc {
+  display: table-cell;
+  padding: 0 24px;
+  white-space: pre;
+  font-family: 'Nunito', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.7;
+  vertical-align: top;
+  width: 99%;
+  transition: background .1s;
+}
+
+.code-line:first-child .ln,
+.code-line:first-child .lc { padding-top: 18px; }
+.code-line:last-child .ln,
+.code-line:last-child .lc  { padding-bottom: 18px; }
+
+.hljs { background: transparent !important; padding: 0 !important; }
+
+.state {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 80px 20px;
+  width: 100%;
+  max-width: 860px;
+}
+.state.show { display: flex; animation: fadeUp .4s ease both; }
+
+.state-box {
+  background: var(--white);
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: 48px 40px;
+  box-shadow: 4px 6px 0 var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 400px;
+  width: 100%;
+}
+
+.state-icon { font-size: 40px; line-height: 1; opacity: .2; }
+.state-title { font-size: 20px; font-weight: 900; letter-spacing: -0.03em; }
+.state-sub   { font-size: 13px; font-weight: 600; color: var(--muted); }
+
+.skel {
+  background: linear-gradient(90deg, var(--surface) 25%, #ece9e0 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+  height: 14px;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+</style>
+</head>
+<body>
+<div class="star star-1"></div>
+<div class="star star-2"></div>
+<div class="star star-3"></div>
+<div class="star star-4"></div>
+
+<div class="page">
+  <header>
+    <a class="logo" href="/">hrz<span>.lol</span></a>
+    <div class="header-actions" id="headerActions" style="display:none">
+      <button class="btn" id="copyBtn" onclick="copyPaste()">copy</button>
+      <a class="btn" id="rawBtn" target="_blank">raw</a>
+      <a class="btn primary" href="/">+ new paste</a>
+    </div>
+  </header>
+
+  <div class="state show" id="stateLoading">
+    <div style="width:100%; max-width:860px; background:var(--white); border:var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:4px 6px 0 var(--ink);">
+      <div style="padding:22px 28px 20px; border-bottom:2.5px solid #111; display:flex; flex-direction:column; gap:12px;">
+        <div class="skel" style="width:35%; height:26px"></div>
+        <div style="display:flex; gap:8px">
+          <div class="skel" style="width:80px; height:20px; border-radius:999px"></div>
+          <div class="skel" style="width:100px; height:20px; border-radius:999px"></div>
+          <div class="skel" style="width:70px; height:20px; border-radius:999px"></div>
+        </div>
+      </div>
+      <div style="padding:20px 28px; display:flex; flex-direction:column; gap:10px;">
+        <div class="skel" style="width:75%"></div>
+        <div class="skel" style="width:60%"></div>
+        <div class="skel" style="width:82%"></div>
+        <div class="skel" style="width:50%"></div>
+        <div class="skel" style="width:68%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="state" id="stateError">
+    <div class="state-box">
+      <div class="state-icon">&#9632;</div>
+      <div class="state-title" id="errTitle">paste not found</div>
+      <div class="state-sub" id="errSub">it may have expired or never existed</div>
+      <a class="btn primary" href="/" style="margin-top:8px">create new paste &#8594;</a>
+    </div>
+  </div>
+
+  <div class="content" id="pasteContent" style="display:none">
+    <div class="paste-header" id="pasteHeader">
+      <div class="paste-title-wrap">
+        <div class="paste-title" id="pasteTitle"></div>
+        <div class="paste-meta" id="pasteMeta"></div>
+      </div>
+    </div>
+    <div class="code-card">
+      <div class="code-scroll">
+        <div class="code-table" id="codeTable"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+const id = location.pathname.slice(1);
+let pasteContent = '';
+
+function show(name) {
+  ['stateLoading','stateError','pasteContent'].forEach(s => {
+    const el = document.getElementById(s);
+    const isMatch = s === name;
+    el.style.display = isMatch ? (s === 'pasteContent' ? 'flex' : 'flex') : 'none';
+    el.classList.toggle('show', isMatch && s !== 'pasteContent');
+  });
+}
+
+function timeAgo(ts) {
+  const d = Math.floor(Date.now() / 1000) - ts;
+  if (d < 60)    return d + 's ago';
+  if (d < 3600)  return Math.floor(d / 60) + 'm ago';
+  if (d < 86400) return Math.floor(d / 3600) + 'h ago';
+  return Math.floor(d / 86400) + 'd ago';
+}
+
+function timeIn(ts) {
+  const d = ts - Math.floor(Date.now() / 1000);
+  if (d <= 0)    return 'expired';
+  if (d < 3600)  return 'expires in ' + Math.floor(d / 60) + 'm';
+  if (d < 86400) return 'expires in ' + Math.floor(d / 3600) + 'h';
+  return 'expires in ' + Math.floor(d / 86400) + 'd';
+}
+
+function buildCode(content, language) {
+  let highlighted;
+  try {
+    highlighted = language === 'plaintext'
+      ? content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      : hljs.highlight(content, { language, ignoreIllegals: true }).value;
+  } catch {
+    highlighted = content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  const lines = highlighted.split('\n');
+  if (lines.at(-1) === '') lines.pop();
+  return lines.map((line, i) =>
+    `<div class="code-line"><span class="ln">${i + 1}</span><span class="lc">${line || ' '}</span></div>`
+  ).join('');
+}
+
+async function load() {
+  try {
+    const res  = await fetch('/api/paste/' + id);
+    const data = await res.json();
+
+    if (!res.ok) {
+      document.getElementById('errTitle').textContent = data.error || 'something went wrong';
+      document.getElementById('errSub').textContent   = res.status === 410
+        ? 'this paste has expired and been deleted'
+        : 'it may have never existed';
+      show('stateError');
+      return;
+    }
+
+    pasteContent = data.content;
+    document.title = (data.title || 'untitled') + ' – hrz.paste';
+
+    const titleEl = document.getElementById('pasteTitle');
+    titleEl.textContent = data.title || 'untitled paste';
+    if (!data.title) titleEl.classList.add('untitled');
+
+    const meta = document.getElementById('pasteMeta');
+    const chips = [
+      `<span class="meta-chip lang">${data.language}</span>`,
+      `<span class="meta-chip">${timeAgo(data.created_at)}</span>`,
+      `<span class="meta-chip">${data.views.toLocaleString()} view${data.views !== 1 ? 's' : ''}</span>`,
+    ];
+    if (data.expires_at) chips.push(`<span class="meta-chip">${timeIn(data.expires_at)}</span>`);
+    meta.innerHTML = chips.join('');
+
+    document.getElementById('rawBtn').href = '/raw/' + id;
+
+    document.getElementById('codeTable').innerHTML = buildCode(data.content, data.language);
+
+    document.getElementById('headerActions').style.display = 'flex';
+    show('pasteContent');
+    document.getElementById('pasteContent').style.flexDirection = 'column';
+
+  } catch {
+    document.getElementById('errTitle').textContent = 'network error';
+    document.getElementById('errSub').textContent   = 'could not load the paste';
+    show('stateError');
+  }
+}
+
+function copyPaste() {
+  navigator.clipboard.writeText(pasteContent).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'copied!';
+    btn.classList.add('success');
+    setTimeout(() => {
+      btn.textContent = 'copy';
+      btn.classList.remove('success');
+    }, 2000);
+  });
+}
+
+load();
+</script>
+</body>
+</html>

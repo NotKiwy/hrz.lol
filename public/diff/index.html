@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Text &amp; Code Diff Viewer – hrz.lol</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace;--add-bg:#d5f5e3;--add-border:#2ecc71;--del-bg:#fadbd8;--del-border:#e74c3c}
+html,body{height:100%;overflow:hidden}
+a{-webkit-tap-highlight-color:transparent}a:focus{outline:none}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);display:flex;flex-direction:column}
+
+.topbar{display:flex;align-items:center;gap:12px;padding:10px 20px;background:var(--white);border-bottom:2.5px solid var(--ink);flex-shrink:0}
+.logo{font-weight:900;font-size:20px;letter-spacing:-0.04em;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--muted)}
+.sep{width:1px;height:20px;background:var(--subtle)}
+.title{font-size:14px;font-weight:800;color:var(--muted)}
+.stats{margin-left:auto;display:flex;gap:12px;font-size:12px;font-weight:700}
+.stat-add{color:#1a7a41}.stat-del{color:#c0392b}.stat-eq{color:var(--muted)}
+.tb-btn{padding:6px 14px;border:2px solid var(--ink);border-radius:8px;font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;background:var(--white);transition:background .1s}
+.tb-btn:hover{background:var(--surface)}
+.tb-btn.accent{background:var(--accent)}
+
+.layout{flex:1;display:grid;grid-template-columns:1fr 1fr;overflow:hidden}
+.pane{display:flex;flex-direction:column;overflow:hidden}
+.pane:first-child{border-right:2.5px solid var(--ink)}
+.pane-header{padding:9px 16px;background:var(--surface);border-bottom:2px solid var(--ink);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);flex-shrink:0}
+textarea{flex:1;resize:none;border:none;outline:none;padding:14px 16px;font-family:var(--mono);font-size:13px;font-weight:500;line-height:1.7;background:var(--white);color:var(--ink)}
+textarea::placeholder{color:var(--subtle)}
+
+.diff-view{flex:1;overflow:auto;background:var(--white)}
+.diff-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:13px;font-weight:500;line-height:1.7}
+.diff-table td{padding:1px 0;white-space:pre-wrap;word-break:break-all}
+.diff-table .ln{width:40px;min-width:40px;text-align:right;padding:0 10px;color:var(--subtle);user-select:none;font-size:11px;border-right:2px solid var(--surface)}
+.diff-table .content{padding:0 14px}
+tr.add td{background:var(--add-bg)}.tr.add .ln{color:#1a7a41}
+tr.del td{background:var(--del-bg)}.tr.del .ln{color:#c0392b}
+tr.add .mark{color:#1a7a41;font-weight:700}
+tr.del .mark{color:#c0392b;font-weight:700}
+
+.empty-diff{padding:40px;text-align:center;color:var(--subtle);font-size:14px;font-weight:700}
+
+.view-toggle{display:flex;gap:6px}
+.vt-btn{padding:5px 12px;border:2px solid var(--ink);border-radius:8px;font-family:var(--font);font-size:11px;font-weight:800;cursor:pointer;background:var(--white)}
+.vt-btn.active{background:var(--accent)}
+
+@media(max-width:640px){
+  .topbar{flex-wrap:wrap;gap:6px;padding:8px 12px}
+  .stats{margin-left:0}
+  .layout{grid-template-columns:1fr!important}
+  .pane:first-child{border-right:none;border-bottom:2.5px solid var(--ink);height:40vh}
+  .pane{height:auto;flex:1}
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/diff.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/diff.png">
+</head>
+<body>
+<div class="topbar">
+  <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+  <div class="sep"></div>
+  <div class="title">diff</div>
+  <div class="stats">
+    <span class="stat-add" id="statAdd">+0</span>
+    <span class="stat-del" id="statDel">-0</span>
+    <span class="stat-eq"  id="statEq">~0</span>
+  </div>
+  <div class="view-toggle">
+    <button class="vt-btn active" id="vtSplit" onclick="setView('split')">split</button>
+    <button class="vt-btn" id="vtUnified" onclick="setView('unified')">unified</button>
+  </div>
+  <button class="tb-btn" onclick="clearAll()">clear</button>
+  <button class="tb-btn accent" onclick="copyDiff()">copy diff</button>
+</div>
+
+<div class="layout" id="layout">
+  <div class="pane" id="paneLeft">
+    <div class="pane-header">original</div>
+    <textarea id="textA" placeholder="paste original text here..." spellcheck="false"></textarea>
+  </div>
+  <div class="pane" id="paneRight">
+    <div class="pane-header">changed</div>
+    <textarea id="textB" placeholder="paste changed text here..." spellcheck="false"></textarea>
+  </div>
+</div>
+
+<script>
+let currentView = 'split';
+
+function lcs(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({length:m+1}, () => new Int32Array(n+1));
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1]+1 : Math.max(dp[i-1][j], dp[i][j-1]);
+  const result = [];
+  let i = m, j = n;
+  while (i > 0 && j > 0) {
+    if (a[i-1] === b[j-1]) { result.push({type:'eq',val:a[i-1],ia:i-1,ib:j-1}); i--; j--; }
+    else if (dp[i-1][j] > dp[i][j-1]) { result.push({type:'del',val:a[i-1],ia:i-1}); i--; }
+    else { result.push({type:'add',val:b[j-1],ib:j-1}); j--; }
+  }
+  while (i > 0) { result.push({type:'del',val:a[i-1],ia:i-1}); i--; }
+  while (j > 0) { result.push({type:'add',val:b[j-1],ib:j-1}); j--; }
+  return result.reverse();
+}
+
+function escape(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+let lastDiff = [];
+
+function compute() {
+  const a = document.getElementById('textA').value.split('\n');
+  const b = document.getElementById('textB').value.split('\n');
+  lastDiff = lcs(a, b);
+
+  const add = lastDiff.filter(x=>x.type==='add').length;
+  const del = lastDiff.filter(x=>x.type==='del').length;
+  const eq  = lastDiff.filter(x=>x.type==='eq').length;
+  document.getElementById('statAdd').textContent = '+' + add;
+  document.getElementById('statDel').textContent = '-' + del;
+  document.getElementById('statEq').textContent  = '~' + eq;
+
+  renderDiff();
+}
+
+function renderDiff() {
+  if (currentView === 'split') renderSplit();
+  else renderUnified();
+}
+
+function renderSplit() {
+  const layout = document.getElementById('layout');
+  layout.style.gridTemplateColumns = '1fr 1fr';
+
+  const leftPane  = document.getElementById('paneLeft');
+  const rightPane = document.getElementById('paneRight');
+  if (!leftPane.querySelector('textarea')) {
+    leftPane.innerHTML = '<div class="pane-header">original</div><textarea id="textA" placeholder="paste original text here..." spellcheck="false"></textarea>';
+    document.getElementById('textA').addEventListener('input', debounce(compute, 300));
+  }
+  if (!rightPane.querySelector('textarea')) {
+    rightPane.innerHTML = '<div class="pane-header">changed</div><textarea id="textB" placeholder="paste changed text here..." spellcheck="false"></textarea>';
+    document.getElementById('textB').addEventListener('input', debounce(compute, 300));
+  }
+}
+
+function renderUnified() {
+  const layout = document.getElementById('layout');
+  layout.style.gridTemplateColumns = '1fr';
+
+  const leftPane = document.getElementById('paneLeft');
+  const rightPane = document.getElementById('paneRight');
+
+  if (lastDiff.length === 0) {
+    leftPane.innerHTML = '<div class="pane-header">unified diff</div><div class="diff-view"><div class="empty-diff">paste text in both panes (switch to split view)</div></div>';
+    rightPane.style.display = 'none';
+    return;
+  }
+
+  rightPane.style.display = 'none';
+  leftPane.style.display = 'flex';
+
+  let lnA = 0, lnB = 0;
+  const rows = lastDiff.map(item => {
+    if (item.type === 'eq')  { lnA++; lnB++; return `<tr class="eq"><td class="ln">${lnA}</td><td class="ln">${lnB}</td><td class="content mark"> </td><td class="content">${escape(item.val)}</td></tr>`; }
+    if (item.type === 'del') { lnA++; return `<tr class="del"><td class="ln">${lnA}</td><td class="ln"></td><td class="content mark">-</td><td class="content">${escape(item.val)}</td></tr>`; }
+    lnB++; return `<tr class="add"><td class="ln"></td><td class="ln">${lnB}</td><td class="content mark">+</td><td class="content">${escape(item.val)}</td></tr>`;
+  }).join('');
+
+  leftPane.innerHTML = `<div class="pane-header">unified diff</div><div class="diff-view"><table class="diff-table">${rows}</table></div>`;
+}
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('vtSplit').classList.toggle('active', v === 'split');
+  document.getElementById('vtUnified').classList.toggle('active', v === 'unified');
+
+  if (v === 'split') {
+    const layout = document.getElementById('layout');
+    layout.style.gridTemplateColumns = '1fr 1fr';
+    document.getElementById('paneLeft').innerHTML  = '<div class="pane-header">original</div><textarea id="textA" placeholder="paste original text here..." spellcheck="false"></textarea>';
+    document.getElementById('paneRight').style.display = '';
+    document.getElementById('paneRight').innerHTML = '<div class="pane-header">changed</div><textarea id="textB" placeholder="paste changed text here..." spellcheck="false"></textarea>';
+    document.getElementById('textA').addEventListener('input', debounce(compute, 300));
+    document.getElementById('textB').addEventListener('input', debounce(compute, 300));
+  } else {
+    renderUnified();
+  }
+}
+
+function clearAll() {
+  setView('split');
+  document.getElementById('textA').value = '';
+  document.getElementById('textB').value = '';
+  lastDiff = [];
+  document.getElementById('statAdd').textContent = '+0';
+  document.getElementById('statDel').textContent = '-0';
+  document.getElementById('statEq').textContent  = '~0';
+}
+
+function copyDiff() {
+  const text = lastDiff.map(i => (i.type==='add'?'+':i.type==='del'?'-':' ') + i.val).join('\n');
+  navigator.clipboard.writeText(text);
+  document.querySelector('.tb-btn.accent').textContent = 'copied!';
+  setTimeout(() => document.querySelector('.tb-btn.accent').textContent = 'copy diff', 2000);
+}
+
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+document.getElementById('textA').addEventListener('input', debounce(compute, 300));
+document.getElementById('textB').addEventListener('input', debounce(compute, 300));
+</script>
+</body>
+</html>

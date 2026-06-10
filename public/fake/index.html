@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fake Data Generator – hrz.lol</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif; }
+html, body { height: 100%; }
+a { -webkit-tap-highlight-color: transparent; }
+a:focus { outline: none; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); }
+.layout { display: flex; height: 100vh; }
+
+.sidebar {
+  width: 280px; flex-shrink: 0; border-right: 2.5px solid var(--ink);
+  background: var(--white); display: flex; flex-direction: column; overflow-y: auto;
+}
+.sidebar-top { padding: 20px; border-bottom: 2px solid var(--surface); }
+.sidebar-top h1 { font-size: 22px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 4px; }
+.sidebar-top p { color: var(--muted); font-size: 12px; font-weight: 600; }
+
+.section { padding: 14px 16px; border-bottom: 2px solid var(--surface); }
+.section-title { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 10px; }
+
+.count-row { display: flex; align-items: center; gap: 8px; }
+.count-row label { font-size: 13px; font-weight: 700; }
+.count-input {
+  width: 70px; padding: 7px 10px; border: 2px solid var(--ink); border-radius: 8px;
+  font-family: var(--font); font-size: 14px; font-weight: 800; background: var(--bg); outline: none;
+}
+
+.field-list { display: flex; flex-direction: column; gap: 6px; }
+.field-toggle {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  padding: 5px 8px; border-radius: 8px; transition: background .1s;
+}
+.field-toggle:hover { background: var(--surface); }
+.field-toggle input[type=checkbox] { display: none; }
+.checkbox {
+  width: 18px; height: 18px; border: 2px solid var(--ink); border-radius: 5px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  font-size: 11px; font-weight: 900; transition: background .1s;
+}
+.field-toggle input:checked ~ .checkbox { background: var(--accent); }
+.field-toggle input:checked ~ .checkbox::after { content: '✓'; }
+.field-name { font-size: 13px; font-weight: 700; }
+
+.format-btns { display: flex; gap: 6px; }
+.fmt-btn {
+  flex: 1; padding: 8px; border: 2px solid var(--ink); border-radius: 8px;
+  font-family: var(--font); font-size: 12px; font-weight: 800; cursor: pointer;
+  background: var(--white); transition: background .1s;
+}
+.fmt-btn.active { background: var(--accent); }
+
+.gen-btn {
+  margin: 14px 16px; padding: 13px; background: var(--accent); border: 2.5px solid var(--ink);
+  border-radius: 14px; font-family: var(--font); font-size: 15px; font-weight: 900;
+  cursor: pointer; box-shadow: 3px 3px 0 var(--ink); transition: transform .15s, box-shadow .15s;
+}
+.gen-btn:hover { transform: translateY(-2px); box-shadow: 4px 5px 0 var(--ink); }
+
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.output-bar {
+  padding: 12px 20px; background: var(--white); border-bottom: 2.5px solid var(--ink);
+  display: flex; align-items: center; gap: 10px;
+}
+.output-bar span { font-size: 13px; font-weight: 700; color: var(--muted); margin-right: auto; }
+.action-btn {
+  padding: 7px 16px; border: 2px solid var(--ink); border-radius: 8px;
+  font-family: var(--font); font-size: 12px; font-weight: 800; cursor: pointer;
+  background: var(--white); transition: transform .1s;
+}
+.action-btn:hover { transform: translateY(-1px); }
+.action-btn.primary { background: var(--accent); }
+
+.output {
+  flex: 1; overflow: auto; padding: 0;
+  font-family: monospace; font-size: 13px;
+}
+.output pre {
+  padding: 20px; margin: 0; line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+}
+.table-wrap { overflow: auto; flex: 1; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  background: var(--white); border-bottom: 2.5px solid var(--ink);
+  padding: 10px 14px; font-size: 11px; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--muted); text-align: left; position: sticky; top: 0;
+}
+td { padding: 9px 14px; border-bottom: 1px solid var(--surface); font-weight: 600; }
+tr:nth-child(even) td { background: var(--surface); }
+tr:hover td { background: #eee; }
+
+.empty { display: flex; align-items: center; justify-content: center; flex: 1; color: var(--muted);
+  font-size: 15px; font-weight: 700; }
+
+.sidebar-toggle { display: none; }
+@media (max-width: 700px) {
+  .layout { flex-direction: column; height: auto; min-height: 100vh; }
+  .sidebar { width: 100%; border-right: none; border-bottom: 2.5px solid var(--ink); overflow-y: visible; }
+  .sidebar-body { display: none; }
+  .sidebar-body.open { display: contents; }
+  .sidebar-toggle {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; cursor: pointer; font-size: 14px; font-weight: 800;
+    border-bottom: 2px solid var(--surface);
+  }
+  .main { height: 60vh; }
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/fake.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/fake.png">
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <h1>fake data</h1>
+      <p>generate realistic test data</p>
+    </div>
+    <div class="sidebar-toggle" id="sidebarToggle">
+      <span>settings</span><span id="toggleArrow">▾</span>
+    </div>
+
+    <div class="sidebar-body" id="sidebarBody">
+    <div class="section">
+      <div class="section-title">rows</div>
+      <div class="count-row">
+        <input type="number" class="count-input" id="rowCount" value="10" min="1" max="1000">
+        <label>records</label>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">fields</div>
+      <div class="field-list" id="fieldList"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">format</div>
+      <div class="format-btns">
+        <button class="fmt-btn active" data-fmt="table">table</button>
+        <button class="fmt-btn" data-fmt="json">json</button>
+        <button class="fmt-btn" data-fmt="csv">csv</button>
+        <button class="fmt-btn" data-fmt="sql">sql</button>
+      </div>
+    </div>
+
+    <button class="gen-btn" id="genBtn">generate</button>
+    </div>  </div>
+
+  <div class="main">
+    <div class="output-bar">
+      <span id="outputInfo">0 records</span>
+      <button class="action-btn" id="copyBtn">copy</button>
+      <button class="action-btn primary" id="downloadBtn">download</button>
+    </div>
+    <div class="output" id="output">
+      <div class="empty">configure fields and click generate</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const FIELDS = [
+  { id: 'id',        label: 'id',           checked: true },
+  { id: 'firstName', label: 'first name',   checked: true },
+  { id: 'lastName',  label: 'last name',    checked: true },
+  { id: 'email',     label: 'email',        checked: true },
+  { id: 'phone',     label: 'phone',        checked: false },
+  { id: 'username',  label: 'username',     checked: false },
+  { id: 'company',   label: 'company',      checked: false },
+  { id: 'jobTitle',  label: 'job title',    checked: false },
+  { id: 'country',   label: 'country',      checked: false },
+  { id: 'city',      label: 'city',         checked: false },
+  { id: 'street',    label: 'street',       checked: false },
+  { id: 'zip',       label: 'zip code',     checked: false },
+  { id: 'birthday',  label: 'birthday',     checked: false },
+  { id: 'avatar',    label: 'avatar url',   checked: false },
+  { id: 'website',   label: 'website',      checked: false },
+  { id: 'bio',       label: 'bio',          checked: false },
+  { id: 'ip',        label: 'ip address',   checked: false },
+  { id: 'uuid',      label: 'uuid',         checked: false },
+  { id: 'color',     label: 'color (hex)',  checked: false },
+  { id: 'price',     label: 'price',        checked: false },
+];
+
+const fieldList = document.getElementById('fieldList');
+FIELDS.forEach(f => {
+  const label = document.createElement('label');
+  label.className = 'field-toggle';
+  label.innerHTML = `<input type="checkbox" id="f_${f.id}" ${f.checked ? 'checked' : ''}>
+    <div class="checkbox"></div>
+    <span class="field-name">${f.label}</span>`;
+  fieldList.appendChild(label);
+});
+
+let currentFmt = 'table';
+document.querySelectorAll('.fmt-btn').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.fmt-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    currentFmt = b.dataset.fmt;
+  };
+});
+
+const FIRST = ['james','john','robert','michael','william','david','richard','joseph','thomas','charles','christopher','daniel','matthew','anthony','mark','donald','steven','paul','andrew','joshua','ryan','kevin','brian','george','edward','timothy','ronald','kenneth','jason','jeffrey','frank','scott','eric','stephen','jacob','gary','raymond','henry','samuel','nicholas','patrick','alexander','jack','dennis','jerry','tyler','aaron','jose','adam','nathan','zachary','anna','mary','patricia','jennifer','linda','barbara','margaret','susan','dorothy','lisa','karen','betty','helen','sandra','donna','carol','ruth','sharon','michelle','laura','sarah','kimberly','deborah','jessica','shirley','cynthia','angela','melissa','brenda','amy','anna','rebecca','virginia','kathleen','pamela','martha','debra','amanda','stephanie','carolyn','christine','marie','janet','catherine','frances','ann','joyce','diane'];
+const LAST  = ['smith','johnson','williams','brown','jones','garcia','miller','davis','rodriguez','martinez','hernandez','lopez','gonzalez','wilson','anderson','thomas','taylor','moore','jackson','martin','lee','perez','thompson','white','harris','sanchez','clark','ramirez','lewis','robinson','walker','young','allen','king','wright','scott','torres','nguyen','hill','flores','green','adams','nelson','baker','hall','rivera','campbell','mitchell','carter','roberts'];
+const DOMAINS = ['gmail.com','yahoo.com','hotmail.com','outlook.com','icloud.com','proton.me','fastmail.com'];
+const COMPANIES = ['acme corp','globex','initech','umbrella co','oscorp','wayne enterprises','stark industries','dunder mifflin','vandelay industries','hooli','pied piper','aviato','soylent corp','nakatomi corp','cyberdyne','weyland-yutani'];
+const JOBS = ['software engineer','product manager','ux designer','data analyst','devops engineer','marketing manager','sales representative','content writer','hr specialist','financial analyst','cto','ceo','frontend developer','backend developer','full stack developer','qa engineer','scrum master','cloud architect'];
+const COUNTRIES = ['us','de','fr','gb','ca','au','jp','br','in','mx','it','es','nl','se','no','dk','fi','pl','ru','cn','kr','sg','nz','za','ar'];
+const CITIES = ['new york','london','berlin','paris','tokyo','sydney','toronto','amsterdam','stockholm','oslo','madrid','barcelona','milan','warsaw','dubai','singapore','hong kong','seoul','mumbai','buenos aires','cape town','mexico city','los angeles','chicago','san francisco','seattle','austin','boston','denver','miami'];
+const STREETS = ['main st','oak ave','maple dr','elm st','cedar ln','pine rd','riverside dr','sunset blvd','broadway','park ave','lake view dr','forest way','hill rd','valley ln','river rd','mountain ave','ocean blvd'];
+const TLDS = ['io','co','dev','app','net','org','ai','tech','design','studio'];
+const BIOS = ['coffee addict and code enthusiast.','building things on the internet.','design is not just what it looks like.','making the web a better place, one commit at a time.','serial learner and occasional hiker.','turning caffeine into code since forever.','product person with an engineering background.','passionate about open source and good design.'];
+
+function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+function pad(n) { return String(n).padStart(2, '0'); }
+
+let idCounter = 1;
+function genRow() {
+  const first = rand(FIRST);
+  const last  = rand(LAST);
+  const year  = randInt(1960, 2002);
+  const month = randInt(1, 12);
+  const day   = randInt(1, 28);
+  const r     = {};
+  FIELDS.forEach(f => {
+    if (!document.getElementById('f_' + f.id)?.checked) return;
+    switch (f.id) {
+      case 'id':        r.id        = idCounter++;         break;
+      case 'firstName': r.firstName = first;               break;
+      case 'lastName':  r.lastName  = last;                break;
+      case 'email':     r.email     = `${first}.${last}${randInt(1,99)}@${rand(DOMAINS)}`; break;
+      case 'phone':     r.phone     = `+1 (${randInt(200,999)}) ${randInt(100,999)}-${randInt(1000,9999)}`; break;
+      case 'username':  r.username  = `${first}_${last}${randInt(10,99)}`; break;
+      case 'company':   r.company   = rand(COMPANIES);     break;
+      case 'jobTitle':  r.jobTitle  = rand(JOBS);          break;
+      case 'country':   r.country   = rand(COUNTRIES).toUpperCase(); break;
+      case 'city':      r.city      = rand(CITIES);        break;
+      case 'street':    r.street    = `${randInt(1,9999)} ${rand(STREETS)}`; break;
+      case 'zip':       r.zip       = String(randInt(10000,99999)); break;
+      case 'birthday':  r.birthday  = `${year}-${pad(month)}-${pad(day)}`; break;
+      case 'avatar':    r.avatar    = `https://i.pravatar.cc/150?u=${first}${last}${randInt(1,999)}`; break;
+      case 'website':   r.website   = `https://${first}${last}.${rand(TLDS)}`; break;
+      case 'bio':       r.bio       = rand(BIOS);           break;
+      case 'ip':        r.ip        = `${randInt(1,254)}.${randInt(0,255)}.${randInt(0,255)}.${randInt(1,254)}`; break;
+      case 'uuid':      r.uuid      = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+                          const v = Math.random()*16|0; return (c==='x'?v:(v&0x3|0x8)).toString(16);
+                        }); break;
+      case 'color':     r.color     = '#' + Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0'); break;
+      case 'price':     r.price     = (Math.random()*999+0.99).toFixed(2); break;
+    }
+  });
+  return r;
+}
+
+let lastData = [];
+let lastFields = [];
+
+function generate() {
+  idCounter = 1;
+  const count = Math.min(parseInt(document.getElementById('rowCount').value)||10, 1000);
+  const activeFields = FIELDS.filter(f => document.getElementById('f_'+f.id)?.checked);
+  if (!activeFields.length) {
+    document.getElementById('output').innerHTML = '<div class="empty">select at least one field</div>';
+    return;
+  }
+  lastData   = Array.from({ length: count }, genRow);
+  lastFields = activeFields;
+  renderOutput();
+}
+
+function renderOutput() {
+  const out    = document.getElementById('output');
+  const info   = document.getElementById('outputInfo');
+  info.textContent = lastData.length + ' records';
+
+  if (currentFmt === 'table') {
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap';
+    const t = document.createElement('table');
+    const thead = `<tr>${lastFields.map(f=>`<th>${f.label}</th>`).join('')}</tr>`;
+    const tbody = lastData.map(r => `<tr>${lastFields.map(f=>`<td>${r[f.id]??''}</td>`).join('')}</tr>`).join('');
+    t.innerHTML = `<thead>${thead}</thead><tbody>${tbody}</tbody>`;
+    wrap.appendChild(t);
+    out.innerHTML = '';
+    out.appendChild(wrap);
+  } else {
+    let text = '';
+    if (currentFmt === 'json') text = JSON.stringify(lastData, null, 2);
+    else if (currentFmt === 'csv') {
+      const keys = lastFields.map(f=>f.id);
+      text = keys.join(',') + '\n' + lastData.map(r => keys.map(k => JSON.stringify(r[k]??'')).join(',')).join('\n');
+    } else if (currentFmt === 'sql') {
+      const tbl  = 'users';
+      const keys = lastFields.map(f=>f.id);
+      text = lastData.map(r => `INSERT INTO ${tbl} (${keys.join(', ')}) VALUES (${keys.map(k => typeof r[k]==='number'?r[k]:JSON.stringify(r[k]??'')).join(', ')});`).join('\n');
+    }
+    out.innerHTML = `<pre>${text.replace(/</g,'&lt;')}</pre>`;
+  }
+}
+
+document.getElementById('genBtn').onclick = generate;
+
+document.getElementById('copyBtn').onclick = () => {
+  if (!lastData.length) return;
+  let text = '';
+  const keys = lastFields.map(f=>f.id);
+  if (currentFmt === 'json' || currentFmt === 'table') text = JSON.stringify(lastData, null, 2);
+  else if (currentFmt === 'csv') text = keys.join(',') + '\n' + lastData.map(r=>keys.map(k=>JSON.stringify(r[k]??'')).join(',')).join('\n');
+  else if (currentFmt === 'sql') {
+    text = lastData.map(r=>`INSERT INTO users (${keys.join(', ')}) VALUES (${keys.map(k=>typeof r[k]==='number'?r[k]:JSON.stringify(r[k]??'')).join(', ')});`).join('\n');
+  }
+  navigator.clipboard.writeText(text);
+  document.getElementById('copyBtn').textContent = 'copied!';
+  setTimeout(()=>document.getElementById('copyBtn').textContent='copy',2000);
+};
+
+document.getElementById('downloadBtn').onclick = () => {
+  if (!lastData.length) return;
+  let text = '', ext = '';
+  const keys = lastFields.map(f=>f.id);
+  if (currentFmt === 'json' || currentFmt === 'table') { text = JSON.stringify(lastData, null, 2); ext = 'json'; }
+  else if (currentFmt === 'csv') { text = keys.join(',') + '\n' + lastData.map(r=>keys.map(k=>JSON.stringify(r[k]??'')).join(',')).join('\n'); ext = 'csv'; }
+  else if (currentFmt === 'sql') {
+    text = lastData.map(r=>`INSERT INTO users (${keys.join(', ')}) VALUES (${keys.map(k=>typeof r[k]==='number'?r[k]:JSON.stringify(r[k]??'')).join(', ')});`).join('\n');
+    ext = 'sql';
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+  a.download = `fake-data.${ext}`;
+  a.click();
+};
+
+generate();
+
+const sidebarToggle = document.getElementById('sidebarToggle');
+const sidebarBody   = document.getElementById('sidebarBody');
+const toggleArrow   = document.getElementById('toggleArrow');
+if (sidebarToggle) {
+  sidebarToggle.addEventListener('click', () => {
+    const open = sidebarBody.classList.toggle('open');
+    toggleArrow.textContent = open ? '▴' : '▾';
+  });
+}
+</script>
+</body>
+</html>

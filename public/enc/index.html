@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encoder / Decoder – Base64, URL, Hex – hrz.lol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent}a:focus{outline:none}a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow-x:hidden}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 48px}
+header{width:100%;max-width:680px;display:flex;align-items:center;justify-content:space-between;padding:24px 0 28px;animation:fadeUp .4s ease both}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--muted)}
+.nav-link{font-size:12px;font-weight:800;color:var(--muted);text-decoration:none;padding:4px 12px;border:2px solid var(--subtle);border-radius:999px;transition:border-color .15s,color .15s}
+.nav-link:hover{border-color:var(--ink);color:var(--ink)}
+
+.card{width:100%;max-width:680px;background:var(--white);border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:4px 6px 0 var(--ink);animation:fadeUp .4s .06s ease both}
+.card-head{padding:22px 24px 18px}
+.card-title{font-size:26px;font-weight:900;letter-spacing:-0.04em;margin-bottom:4px}
+.card-sub{font-size:13px;font-weight:600;color:var(--muted)}
+
+.mode-row{display:flex;gap:6px;padding:0 24px 16px;flex-wrap:wrap}
+.mode-btn{padding:6px 16px;border:2px solid var(--subtle);border-radius:999px;font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;background:var(--bg);color:var(--muted);transition:all .15s}
+.mode-btn:hover{border-color:var(--ink);color:var(--ink)}
+.mode-btn.active{background:var(--ink);border-color:var(--ink);color:#fff}
+
+.dir-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-top:2px solid #eeebe2;border-bottom:2px solid #eeebe2;background:var(--surface)}
+.dir-label-txt{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.dir-seg{display:flex;border:2px solid var(--subtle);border-radius:8px;overflow:hidden}
+.dir-btn{padding:5px 16px;font-family:var(--font);font-size:11px;font-weight:800;cursor:pointer;background:transparent;border:none;color:var(--muted);transition:all .15s}
+.dir-btn.active{background:var(--ink);color:#fff}
+
+.ta-section{padding:18px 24px;display:flex;flex-direction:column;gap:6px}
+.ta-label-row{display:flex;align-items:center;justify-content:space-between}
+.ta-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+textarea{width:100%;padding:12px 14px;border:2px solid var(--subtle);border-radius:12px;font-family:var(--mono);font-size:12px;line-height:1.6;background:var(--bg);color:var(--ink);outline:none;resize:vertical;transition:border-color .15s,box-shadow .15s}
+textarea:focus{border-color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+textarea::placeholder{color:var(--subtle)}
+textarea.output{background:var(--surface);cursor:default}
+
+.swap-row{display:flex;align-items:center;padding:0 24px 2px;gap:10px}
+.swap-row::before,.swap-row::after{content:'';flex:1;height:1.5px;background:#eeebe2}
+.swap-btn{padding:4px 12px;border:1.5px solid var(--subtle);border-radius:6px;font-family:var(--font);font-size:11px;font-weight:800;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;white-space:nowrap}
+.swap-btn:hover{border-color:var(--ink);color:var(--ink)}
+
+.copy-btn{padding:3px 10px;border:1.5px solid var(--subtle);border-radius:6px;font-family:var(--font);font-size:10px;font-weight:800;cursor:pointer;background:transparent;color:var(--muted);transition:all .1s}
+.copy-btn:hover{border-color:var(--ink);color:var(--ink)}
+.copy-btn.ok{border-color:#4caf50;color:#2e7d32}
+
+.err-msg{font-size:12px;font-weight:700;color:#c0392b;padding:6px 12px;background:#fadbd8;border:1.5px solid #e74c3c;border-radius:8px;display:none;margin:0 24px 16px}
+.err-msg.show{display:block}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media(max-width:600px){
+  .page{padding:0 14px 36px}
+  header{padding:18px 0 20px}
+  .card-head{padding:18px 18px 14px}
+  .mode-row{padding:0 18px 14px}
+  .dir-bar{padding:10px 18px}
+  .ta-section{padding:14px 18px}
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/enc.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/enc.png">
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+    <a class="nav-link" href="//hrz.lol">all tools</a>
+  </header>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">encode / decode</div>
+      <div class="card-sub">base64 · url · html entities · hex</div>
+    </div>
+
+    <div class="mode-row">
+      <button class="mode-btn active" data-mode="base64">Base64</button>
+      <button class="mode-btn" data-mode="url">URL</button>
+      <button class="mode-btn" data-mode="html">HTML entities</button>
+      <button class="mode-btn" data-mode="hex">Hex</button>
+    </div>
+
+    <div class="dir-bar">
+      <span class="dir-label-txt">direction</span>
+      <div class="dir-seg">
+        <button class="dir-btn active" id="btnEncode" onclick="setDir('encode')">encode</button>
+        <button class="dir-btn" id="btnDecode" onclick="setDir('decode')">decode</button>
+      </div>
+    </div>
+
+    <div class="ta-section">
+      <div class="ta-label-row">
+        <span class="ta-label" id="labelIn">input</span>
+      </div>
+      <textarea id="inputTA" rows="5" placeholder="type or paste here..." spellcheck="false" autocomplete="off"></textarea>
+    </div>
+
+    <div class="swap-row">
+      <button class="swap-btn" onclick="swapPanes()">⇄ swap</button>
+    </div>
+
+    <div class="ta-section" style="padding-top:10px">
+      <div class="ta-label-row">
+        <span class="ta-label" id="labelOut">encoded</span>
+        <button class="copy-btn" id="copyBtn" onclick="copyOut()">copy</button>
+      </div>
+      <textarea id="outputTA" class="output" rows="5" readonly placeholder="result appears here..."></textarea>
+    </div>
+
+    <div class="err-msg" id="errMsg"></div>
+  </div>
+</div>
+
+<script>
+let mode = 'base64';
+let dir  = 'encode';
+
+document.querySelectorAll('.mode-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    mode = b.dataset.mode;
+    run();
+  });
+});
+
+function setDir(d) {
+  dir = d;
+  document.getElementById('btnEncode').classList.toggle('active', d === 'encode');
+  document.getElementById('btnDecode').classList.toggle('active', d === 'decode');
+  document.getElementById('labelIn').textContent  = d === 'encode' ? 'input' : 'encoded';
+  document.getElementById('labelOut').textContent = d === 'encode' ? 'encoded' : 'decoded';
+  document.getElementById('inputTA').placeholder  = d === 'encode' ? 'type or paste here...' : 'paste encoded value...';
+  run();
+}
+
+function swapPanes() {
+  const out = document.getElementById('outputTA').value;
+  if (!out) return;
+  document.getElementById('inputTA').value = out;
+  setDir(dir === 'encode' ? 'decode' : 'encode');
+}
+
+function run() {
+  const inp = document.getElementById('inputTA').value;
+  const out = document.getElementById('outputTA');
+  const err = document.getElementById('errMsg');
+  err.classList.remove('show');
+  if (!inp) { out.value = ''; return; }
+
+  try {
+    if (mode === 'base64') {
+      out.value = dir === 'encode'
+        ? btoa(unescape(encodeURIComponent(inp)))
+        : decodeURIComponent(escape(atob(inp.trim())));
+    } else if (mode === 'url') {
+      out.value = dir === 'encode' ? encodeURIComponent(inp) : decodeURIComponent(inp);
+    } else if (mode === 'html') {
+      if (dir === 'encode') {
+        const d = document.createElement('div');
+        d.textContent = inp;
+        out.value = d.innerHTML;
+      } else {
+        const d = document.createElement('div');
+        d.innerHTML = inp;
+        out.value = d.textContent;
+      }
+    } else if (mode === 'hex') {
+      if (dir === 'encode') {
+        out.value = Array.from(new TextEncoder().encode(inp))
+          .map(b => b.toString(16).padStart(2, '0')).join(' ');
+      } else {
+        const hex = inp.replace(/\s+/g, '');
+        if (hex.length % 2 !== 0) throw new Error('odd-length hex string');
+        const bytes = new Uint8Array(hex.match(/.{2}/g).map(h => parseInt(h, 16)));
+        out.value = new TextDecoder().decode(bytes);
+      }
+    }
+  } catch (e) {
+    out.value = '';
+    err.textContent = 'error: ' + e.message;
+    err.classList.add('show');
+  }
+}
+
+function copyOut() {
+  const val = document.getElementById('outputTA').value;
+  if (!val) return;
+  navigator.clipboard.writeText(val);
+  const btn = document.getElementById('copyBtn');
+  btn.textContent = 'copied!';
+  btn.classList.add('ok');
+  setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('ok'); }, 2000);
+}
+
+let debTimer;
+document.getElementById('inputTA').addEventListener('input', () => {
+  clearTimeout(debTimer);
+  debTimer = setTimeout(run, 150);
+});
+</script>
+</body>
+</html>

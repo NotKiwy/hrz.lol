@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Collaborative Whiteboard Online – hrz.lol</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #faf8f3; --white: #fff; --ink: #111; --muted: #777770;
+  --subtle: #c4c2ba; --surface: #f3f0e8; --accent: #f0c040; --font: 'Nunito', sans-serif;
+}
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font);
+  display: flex; flex-direction: column;
+  height: 100dvh; overscroll-behavior: none;
+}
+button { -webkit-tap-highlight-color: transparent; }
+.toolbar, .topbar { user-select: none; -webkit-user-select: none; }
+
+.topbar {
+  display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+  background: var(--white); border-bottom: 2.5px solid var(--ink); flex-shrink: 0;
+}
+.logo { font-weight: 900; font-size: 18px; letter-spacing: -0.04em; }
+.logo span { color: var(--muted); }
+.room-badge {
+  background: var(--surface); border: 2px solid var(--ink); border-radius: 8px;
+  padding: 3px 10px; font-size: 12px; font-weight: 800; font-family: monospace;
+}
+.copy-btn, .clear-btn, .save-btn {
+  padding: 5px 12px; border: 2px solid var(--ink); border-radius: 8px;
+  font-family: var(--font); font-size: 12px; font-weight: 800; cursor: pointer; transition: transform .1s;
+}
+.copy-btn { background: var(--accent); }
+.clear-btn { background: var(--white); }
+.save-btn  { background: #d5f5e3; }
+@media (hover: hover) {
+  .copy-btn:hover, .clear-btn:hover, .save-btn:hover { transform: translateY(-1px); }
+}
+.user-count { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--muted); }
+
+.workspace { display: flex; flex: 1; overflow: hidden; }
+
+.toolbar {
+  width: 64px; flex-shrink: 0; border-right: 2.5px solid var(--ink);
+  background: var(--white); display: flex; flex-direction: column; align-items: center;
+  padding: 12px 0; gap: 8px; overflow-y: auto;
+}
+.tool-sep { width: 36px; height: 2px; background: var(--surface); margin: 4px 0; }
+
+.tool-btn {
+  width: 40px; height: 40px; border: 2px solid var(--ink); border-radius: 10px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; background: var(--white); transition: background .1s, transform .1s;
+  position: relative;
+}
+@media (hover: hover) { .tool-btn:hover { background: var(--surface); } }
+.tool-btn.active { background: var(--accent); box-shadow: 2px 2px 0 var(--ink); }
+
+.size-btn {
+  width: 40px; height: 40px; border: 2px solid transparent; border-radius: 10px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  background: transparent; transition: border-color .1s;
+}
+.size-btn.active { border-color: var(--ink); background: var(--surface); }
+.size-dot { background: var(--ink); border-radius: 50%; }
+
+.color-palette {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 0 6px;
+}
+.swatch {
+  width: 22px; height: 22px; border-radius: 6px; cursor: pointer;
+  border: 2px solid transparent; transition: transform .1s, border-color .1s;
+}
+@media (hover: hover) { .swatch:hover { transform: scale(1.15); } }
+.swatch.active { border-color: var(--ink); box-shadow: 1px 1px 0 var(--ink); }
+
+.canvas-area { flex: 1; overflow: hidden; position: relative; background: #fff; }
+canvas {
+  display: block; width: 100%; height: 100%;
+  cursor: crosshair; touch-action: none;
+}
+
+.name-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,.35);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+}
+.name-card {
+  background: var(--white); border: 2.5px solid var(--ink); border-radius: 24px;
+  box-shadow: 5px 6px 0 var(--ink); padding: 32px; width: 100%; max-width: 340px;
+}
+.name-card h2 { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+.name-card p  { color: var(--muted); font-size: 13px; font-weight: 600; margin-bottom: 18px; }
+.name-card input {
+  width: 100%; padding: 12px 16px; border: 2.5px solid var(--ink); border-radius: 12px;
+  font-family: var(--font); font-size: 16px; font-weight: 700; background: var(--bg);
+  outline: none; margin-bottom: 12px;
+}
+.name-card .join-btn {
+  width: 100%; padding: 12px; background: var(--accent); border: 2.5px solid var(--ink);
+  border-radius: 12px; font-family: var(--font); font-size: 15px; font-weight: 900; cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .topbar { padding: 8px 10px; gap: 6px; overflow-x: auto; }
+  .topbar::-webkit-scrollbar { display: none; }
+  .room-badge { font-size: 11px; padding: 3px 7px; flex-shrink: 0; }
+  .copy-btn, .clear-btn, .save-btn { padding: 8px 10px; flex-shrink: 0; }
+  .user-count { font-size: 11px; white-space: nowrap; }
+
+  .workspace { flex-direction: column; }
+  .canvas-area { order: -1; }
+  .toolbar {
+    width: 100%; flex-direction: row; justify-content: flex-start;
+    border-right: none; border-top: 2.5px solid var(--ink);
+    padding: 8px 10px; padding-bottom: calc(8px + env(safe-area-inset-bottom));
+    gap: 6px; overflow-x: auto; overflow-y: hidden;
+  }
+  .toolbar::-webkit-scrollbar { display: none; }
+  .tool-btn, .size-btn { width: 44px; height: 44px; flex-shrink: 0; }
+  .tool-sep { width: 2px; height: 32px; margin: 0 2px; flex-shrink: 0; }
+  .color-palette {
+    grid-template-columns: none; grid-template-rows: 1fr 1fr;
+    grid-auto-flow: column; gap: 4px; padding: 0; flex-shrink: 0;
+  }
+  .swatch { width: 20px; height: 20px; }
+  .name-card { margin: 0 16px; padding: 24px; }
+}
+@media (max-width: 480px) {
+  .logo { display: none; }
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/draw.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/draw.png">
+</head>
+<body>
+
+<div class="name-modal" id="nameModal">
+  <div class="name-card">
+    <h2>join the canvas</h2>
+    <p>enter a name or draw anonymously</p>
+    <input id="nameInput" placeholder="your name" maxlength="20" autofocus>
+    <button class="join-btn" id="joinBtn">start drawing</button>
+  </div>
+</div>
+
+<div class="topbar">
+  <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+  <div class="room-badge" id="roomBadge"></div>
+  <button class="copy-btn" id="copyBtn">copy link</button>
+  <button class="clear-btn" id="clearBtn">clear</button>
+  <button class="save-btn" id="saveBtn">save</button>
+  <div class="user-count" id="userCount">1 drawing</div>
+</div>
+
+<div class="workspace">
+  <div class="toolbar">
+    <button class="tool-btn active" data-tool="pen" title="pen">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+      </svg>
+    </button>
+    <button class="tool-btn" data-tool="eraser" title="eraser">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 20H7L3 16l10-10 7 7-1.5 1.5"/>
+        <path d="M6.5 17.5l4-4"/>
+      </svg>
+    </button>
+
+    <div class="tool-sep"></div>
+
+    <button class="size-btn active" data-size="3" title="small"><div class="size-dot" style="width:4px;height:4px"></div></button>
+    <button class="size-btn" data-size="8" title="medium"><div class="size-dot" style="width:8px;height:8px"></div></button>
+    <button class="size-btn" data-size="16" title="large"><div class="size-dot" style="width:14px;height:14px"></div></button>
+    <button class="size-btn" data-size="32" title="xl"><div class="size-dot" style="width:20px;height:20px"></div></button>
+
+    <div class="tool-sep"></div>
+
+    <div class="color-palette" id="palette"></div>
+  </div>
+
+  <div class="canvas-area">
+    <canvas id="canvas"></canvas>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const roomId = location.pathname.split('/').pop();
+document.getElementById('roomBadge').textContent = roomId;
+document.getElementById('copyBtn').onclick = () => {
+  navigator.clipboard.writeText(location.href);
+  document.getElementById('copyBtn').textContent = 'copied!';
+  setTimeout(() => document.getElementById('copyBtn').textContent = 'copy link', 2000);
+};
+
+const COLORS = ['#111111','#ffffff','#e74c3c','#e67e22','#f1c40f','#2ecc71',
+                 '#1abc9c','#3498db','#9b59b6','#e91e63','#795548','#607d8b'];
+
+const palette = document.getElementById('palette');
+let currentColor = '#111111';
+COLORS.forEach((c, i) => {
+  const s = document.createElement('div');
+  s.className = 'swatch' + (i === 0 ? ' active' : '');
+  s.style.background = c;
+  if (c === '#ffffff') s.style.border = '2px solid #ccc';
+  s.onclick = () => {
+    document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active'));
+    s.classList.add('active');
+    currentColor = c;
+    currentTool = 'pen';
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === 'pen'));
+  };
+  palette.appendChild(s);
+});
+
+let currentTool = 'pen';
+let currentSize = 3;
+
+document.querySelectorAll('.tool-btn').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.tool-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    currentTool = b.dataset.tool;
+  };
+});
+document.querySelectorAll('.size-btn').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.size-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    currentSize = parseInt(b.dataset.size);
+  };
+});
+
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+
+let canvasDpr = 1;
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+
+  let prev = null;
+  const oldDpr = canvasDpr;
+  if (canvas.width && canvas.height) {
+    prev = document.createElement('canvas');
+    prev.width  = canvas.width;
+    prev.height = canvas.height;
+    prev.getContext('2d').drawImage(canvas, 0, 0);
+  }
+
+  canvasDpr     = dpr;
+  canvas.width  = Math.round(w * dpr);
+  canvas.height = Math.round(h * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.lineCap  = 'round';
+  ctx.lineJoin = 'round';
+  if (prev) ctx.drawImage(prev, 0, 0, prev.width / oldDpr, prev.height / oldDpr);
+}
+window.addEventListener('resize', resize);
+resize();
+
+let drawing = false;
+let lastX = 0, lastY = 0;
+let currentStroke = null;
+
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  return { x: t.clientX - r.left, y: t.clientY - r.top };
+}
+
+function drawSegment(x0, y0, x1, y1, color, size, eraser) {
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.strokeStyle = eraser ? '#ffffff' : color;
+  ctx.lineWidth   = size;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+  ctx.stroke();
+}
+
+function startDraw(e) {
+  e.preventDefault();
+  if (e.touches && e.touches.length > 1) { endDraw(e); return; }
+  drawing = true;
+  const { x, y } = getPos(e);
+  lastX = x; lastY = y;
+  const eraser = currentTool === 'eraser';
+  currentStroke = { points: [{ x, y }], color: currentColor, size: currentSize, eraser };
+  socket.emit('stroke_start', { x, y, color: currentColor, size: currentSize, eraser });
+}
+
+function moveDraw(e) {
+  e.preventDefault();
+  if (!drawing) return;
+  if (e.touches && e.touches.length > 1) { endDraw(e); return; }
+  const { x, y } = getPos(e);
+  drawSegment(lastX, lastY, x, y, currentColor, currentSize, currentTool === 'eraser');
+  currentStroke.points.push({ x, y });
+  socket.emit('stroke_move', { x0: lastX, y0: lastY, x1: x, y1: y, color: currentColor, size: currentSize, eraser: currentTool === 'eraser' });
+  lastX = x; lastY = y;
+}
+
+function endDraw(e) {
+  if (!drawing) return;
+  drawing = false;
+  if (currentStroke) {
+    socket.emit('stroke_end', currentStroke);
+    currentStroke = null;
+  }
+}
+
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mousemove', moveDraw);
+canvas.addEventListener('mouseup',   endDraw);
+canvas.addEventListener('touchstart', startDraw, { passive: false });
+canvas.addEventListener('touchmove',  moveDraw,  { passive: false });
+canvas.addEventListener('touchend',    endDraw);
+canvas.addEventListener('touchcancel', endDraw);
+
+function replayStroke(stroke) {
+  if (!stroke.points || stroke.points.length < 2) return;
+  for (let i = 1; i < stroke.points.length; i++) {
+    drawSegment(stroke.points[i-1].x, stroke.points[i-1].y,
+                stroke.points[i].x,   stroke.points[i].y,
+                stroke.color, stroke.size, stroke.eraser);
+  }
+}
+
+document.getElementById('clearBtn').onclick = () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  socket.emit('clear');
+};
+
+document.getElementById('saveBtn').onclick = () => {
+  const a = document.createElement('a');
+  a.href     = canvas.toDataURL('image/png');
+  a.download = 'drawing.png';
+  a.click();
+};
+
+const socket = io('/draw');
+socket.on('connect', () => {});
+socket.on('error', () => location.href = '/draw');
+
+socket.on('canvas_state', (strokes) => strokes.forEach(replayStroke));
+socket.on('self', () => {});
+socket.on('users', (n) => {
+  document.getElementById('userCount').textContent = n + (n === 1 ? ' drawing' : ' drawing');
+});
+
+socket.on('stroke_start', () => {});
+socket.on('stroke_move', ({ x0, y0, x1, y1, color, size, eraser }) => {
+  drawSegment(x0, y0, x1, y1, color, size, eraser);
+});
+socket.on('stroke_end', () => {});
+socket.on('clear', () => ctx.clearRect(0, 0, canvas.width, canvas.height));
+
+document.getElementById('joinBtn').onclick = () => {
+  const name = document.getElementById('nameInput').value.trim();
+  document.getElementById('nameModal').style.display = 'none';
+  socket.emit('join', { roomId, name: name || 'anon' });
+};
+document.getElementById('nameInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('joinBtn').click();
+});
+</script>
+</body>
+</html>

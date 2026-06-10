@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cron Expression Builder – hrz.lol</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent}a:focus{outline:none}a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);padding:0 20px 60px}
+.page{max-width:780px;margin:0 auto}
+header{display:flex;align-items:center;justify-content:space-between;padding:24px 0 32px}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--muted)}
+h1{font-size:28px;font-weight:900;letter-spacing:-0.04em;margin-bottom:6px}
+.sub{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:28px}
+
+.expr-box{background:var(--ink);border-radius:16px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px}
+.expr-text{font-family:var(--mono);font-size:24px;font-weight:700;color:var(--accent);flex:1;letter-spacing:0.05em}
+.copy-btn{padding:8px 18px;background:var(--accent);border:none;border-radius:10px;font-family:var(--font);font-size:13px;font-weight:900;cursor:pointer;transition:transform .1s}
+.copy-btn:hover{transform:scale(1.05)}
+
+.fields{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px}
+.field-card{background:var(--white);border:2.5px solid var(--ink);border-radius:16px;padding:16px;box-shadow:3px 4px 0 var(--ink)}
+.field-name{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:10px}
+.field-val{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--ink);margin-bottom:12px;min-height:28px}
+
+.preset-btns{display:flex;flex-direction:column;gap:4px}
+.preset-btn{padding:5px 8px;border:2px solid var(--subtle);border-radius:8px;font-family:var(--font);font-size:11px;font-weight:800;cursor:pointer;background:var(--bg);color:var(--muted);text-align:left;transition:border-color .1s,background .1s}
+.preset-btn:hover,.preset-btn.active{border-color:var(--ink);background:var(--accent);color:var(--ink)}
+
+.custom-input{width:100%;padding:6px 10px;border:2px solid var(--subtle);border-radius:8px;font-family:var(--mono);font-size:13px;font-weight:600;background:var(--bg);color:var(--ink);outline:none;transition:border-color .1s}
+.custom-input:focus{border-color:var(--ink)}
+
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;padding:20px 24px;box-shadow:3px 4px 0 var(--ink)}
+.panel-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:12px}
+.human{font-size:18px;font-weight:800;color:var(--ink);line-height:1.4}
+.runs{display:flex;flex-direction:column;gap:6px}
+.run{font-family:var(--mono);font-size:13px;font-weight:600;padding:7px 12px;background:var(--surface);border-radius:8px}
+.run .ago{color:var(--muted);font-size:11px;margin-left:8px}
+
+.preset-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.quick-btn{padding:7px 16px;border:2px solid var(--ink);border-radius:999px;font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;background:var(--white);transition:background .1s,transform .1s}
+.quick-btn:hover{background:var(--accent);transform:translateY(-1px)}
+
+@media(max-width:600px){.fields{grid-template-columns:repeat(3,1fr)}.panels{grid-template-columns:1fr}}
+@media(max-width:420px){
+  body{padding:0 12px 40px}
+  .fields{grid-template-columns:repeat(2,1fr)}
+  .expr-text{font-size:18px}
+  .expr-box{padding:16px 18px}
+  h1{font-size:24px}
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/cron.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/cron.png">
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+  </header>
+  <h1>cron builder</h1>
+  <div class="sub">build cron expressions visually</div>
+
+  <div class="expr-box">
+    <div class="expr-text" id="exprText">* * * * *</div>
+    <button class="copy-btn" id="copyBtn">copy</button>
+  </div>
+
+  <div class="preset-row" id="quickRow"></div>
+
+  <div class="fields" id="fields"></div>
+
+  <div class="panels">
+    <div class="panel">
+      <div class="panel-title">human readable</div>
+      <div class="human" id="human">every minute</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">next 5 runs</div>
+      <div class="runs" id="runs"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const FIELDS = [
+  { key:'min',  label:'minute',      min:0, max:59 },
+  { key:'hour', label:'hour',        min:0, max:23 },
+  { key:'dom',  label:'day (month)', min:1, max:31 },
+  { key:'mon',  label:'month',       min:1, max:12 },
+  { key:'dow',  label:'day (week)',  min:0, max:6  },
+];
+
+const vals = { min:'*', hour:'*', dom:'*', mon:'*', dow:'*' };
+
+const QUICKS = [
+  { label:'every minute',      expr:'* * * * *' },
+  { label:'every hour',        expr:'0 * * * *' },
+  { label:'every day midnight',expr:'0 0 * * *' },
+  { label:'every mon 9am',     expr:'0 9 * * 1' },
+  { label:'every weekday',     expr:'0 9 * * 1-5' },
+  { label:'1st of month',      expr:'0 0 1 * *' },
+  { label:'every 15 min',      expr:'*/15 * * * *' },
+  { label:'twice a day',       expr:'0 9,18 * * *' },
+];
+
+const quickRow = document.getElementById('quickRow');
+QUICKS.forEach(q => {
+  const b = document.createElement('button');
+  b.className = 'quick-btn'; b.textContent = q.label;
+  b.onclick = () => { applyExpr(q.expr); };
+  quickRow.appendChild(b);
+});
+
+function applyExpr(expr) {
+  const parts = expr.trim().split(/\s+/);
+  if (parts.length < 5) return;
+  ['min','hour','dom','mon','dow'].forEach((k,i) => { vals[k] = parts[i]; });
+  renderFields(); update();
+}
+
+const PRESETS = [
+  { label:'every', value:'*' },
+  { label:'once',  value: null },
+];
+
+function renderFields() {
+  const container = document.getElementById('fields');
+  container.innerHTML = '';
+  FIELDS.forEach(f => {
+    const v = vals[f.key];
+    const card = document.createElement('div');
+    card.className = 'field-card';
+    card.innerHTML = `<div class="field-name">${f.label}</div>
+      <div class="field-val" id="fv_${f.key}">${v}</div>
+      <div class="preset-btns" id="fp_${f.key}"></div>
+      <input class="custom-input" id="fi_${f.key}" value="${v}" placeholder="e.g. */5 or 1-5">`;
+    container.appendChild(card);
+
+    const btns = card.querySelector(`#fp_${f.key}`);
+    [['every','*'],['once', String(f.min)],['step','*/5']].forEach(([lbl, val]) => {
+      const b = document.createElement('button');
+      b.className = 'preset-btn' + (vals[f.key] === val ? ' active' : '');
+      b.textContent = lbl === 'once' ? `= ${f.min}` : lbl;
+      b.onclick = () => { vals[f.key] = val; renderFields(); update(); };
+      btns.appendChild(b);
+    });
+
+    card.querySelector(`#fi_${f.key}`).addEventListener('input', e => {
+      vals[f.key] = e.target.value || '*';
+      document.getElementById(`fv_${f.key}`).textContent = vals[f.key];
+      update();
+    });
+  });
+}
+
+function getExpr() {
+  return `${vals.min} ${vals.hour} ${vals.dom} ${vals.mon} ${vals.dow}`;
+}
+
+const MONTHS  = ['','jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+const DOWS    = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+const ORDINAL = n => n + (['st','nd','rd'][((n%100-11)%10-1)] || 'th');
+
+function describeField(val, type) {
+  if (val === '*') return null;
+  if (val.startsWith('*/')) {
+    const s = parseInt(val.slice(2));
+    const unit = type === 'min' ? 'minute' : type === 'hour' ? 'hour' : type === 'dom' ? 'day' : type === 'mon' ? 'month' : 'day';
+    return `every ${s} ${unit}${s>1?'s':''}`;
+  }
+  if (val.includes(',')) {
+    const parts = val.split(',').map(v => describeField(v, type) || v).join(', ');
+    return parts;
+  }
+  if (val.includes('-')) {
+    const [a, b] = val.split('-');
+    if (type === 'dow') return `${DOWS[a]} through ${DOWS[b]}`;
+    if (type === 'mon') return `${MONTHS[+a]} through ${MONTHS[+b]}`;
+    return `${a}–${b}`;
+  }
+  const n = parseInt(val);
+  if (type === 'dow') return DOWS[n] || val;
+  if (type === 'mon') return MONTHS[n] || val;
+  if (type === 'dom') return 'the ' + ORDINAL(n);
+  if (type === 'hour') return n === 0 ? 'midnight' : n === 12 ? 'noon' : (n > 12 ? `${n-12}pm` : `${n}am`);
+  return 'at :' + String(n).padStart(2,'0');
+}
+
+function humanReadable() {
+  const { min, hour, dom, mon, dow } = vals;
+  if (min==='*'&&hour==='*'&&dom==='*'&&mon==='*'&&dow==='*') return 'every minute';
+  const parts = [];
+  const minD  = describeField(min,'min');
+  const hourD = describeField(hour,'hour');
+  const domD  = describeField(dom,'dom');
+  const monD  = describeField(mon,'mon');
+  const dowD  = describeField(dow,'dow');
+
+  if (min==='0'&&hour!=='*') parts.push(describeField(hour,'hour'));
+  else if (min!=='*') parts.push(minD ? minD : `at :${min.padStart(2,'0')}`);
+  if (hourD && hour!=='*' && !(min==='0')) parts.push('past hour ' + hour);
+  if (dowD) parts.push('on ' + dowD);
+  else if (domD) parts.push('on ' + domD);
+  if (monD) parts.push('in ' + monD);
+
+  return parts.length ? parts.join(', ') : getExpr();
+}
+
+function nextRuns(count = 5) {
+  const [minF, hourF, domF, monF, dowF] = [vals.min, vals.hour, vals.dom, vals.mon, vals.dow];
+
+  function matches(date) {
+    const mi = date.getMinutes(), h = date.getHours(),
+          d  = date.getDate(), mo = date.getMonth()+1, dw = date.getDay();
+    return matchF(mi,minF,0,59) && matchF(h,hourF,0,23) &&
+           matchF(d,domF,1,31) && matchF(mo,monF,1,12) && matchF(dw,dowF,0,6);
+  }
+
+  function matchF(n, f, lo, hi) {
+    if (f === '*') return true;
+    if (f.startsWith('*/')) { const s = parseInt(f.slice(2)); return (n - lo) % s === 0; }
+    if (f.includes(',')) return f.split(',').some(p => matchF(n, p.trim(), lo, hi));
+    if (f.includes('-')) { const [a,b] = f.split('-').map(Number); return n>=a&&n<=b; }
+    return n === parseInt(f);
+  }
+
+  const results = [];
+  const d = new Date();
+  d.setSeconds(0, 0);
+  d.setMinutes(d.getMinutes() + 1);
+  let tries = 0;
+  while (results.length < count && tries < 100000) {
+    if (matches(d)) results.push(new Date(d));
+    d.setMinutes(d.getMinutes() + 1);
+    tries++;
+  }
+  return results;
+}
+
+function timeAgo(d) {
+  const diff = d - Date.now();
+  const m = Math.round(diff / 60000);
+  if (m < 60)   return `in ${m}m`;
+  if (m < 1440) return `in ${Math.round(m/60)}h`;
+  return `in ${Math.round(m/1440)}d`;
+}
+
+function update() {
+  const expr = getExpr();
+  document.getElementById('exprText').textContent = expr;
+  document.getElementById('human').textContent    = humanReadable();
+
+  const runs = nextRuns(5);
+  const runsEl = document.getElementById('runs');
+  runsEl.innerHTML = runs.map(d =>
+    `<div class="run">${d.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}<span class="ago">${timeAgo(d)}</span></div>`
+  ).join('') || '<div class="run" style="color:var(--muted)">no runs found in range</div>';
+}
+
+document.getElementById('copyBtn').onclick = () => {
+  navigator.clipboard.writeText(getExpr());
+  document.getElementById('copyBtn').textContent = 'copied!';
+  setTimeout(() => document.getElementById('copyBtn').textContent = 'copy', 2000);
+};
+
+renderFields(); update();
+</script>
+</body>
+</html>

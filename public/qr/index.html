@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Code Generator – hrz.lol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent}a:focus{outline:none}a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow-x:hidden}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 48px}
+header{width:100%;max-width:680px;display:flex;align-items:center;justify-content:space-between;padding:24px 0 28px;animation:fadeUp .4s ease both}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--muted)}
+.nav-link{font-size:12px;font-weight:800;color:var(--muted);text-decoration:none;padding:4px 12px;border:2px solid var(--subtle);border-radius:999px;transition:border-color .15s,color .15s}
+.nav-link:hover{border-color:var(--ink);color:var(--ink)}
+
+.card{width:100%;max-width:680px;background:var(--white);border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:4px 6px 0 var(--ink);animation:fadeUp .4s .06s ease both}
+.card-body{padding:28px 28px 24px}
+.card-title{font-size:26px;font-weight:900;letter-spacing:-0.04em;margin-bottom:4px}
+.card-sub{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:22px}
+
+.input-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:8px;display:block}
+textarea{width:100%;min-height:90px;padding:12px 14px;border:2px solid var(--subtle);border-radius:14px;font-family:var(--mono);font-size:13px;line-height:1.6;background:var(--bg);color:var(--ink);outline:none;resize:vertical;transition:border-color .15s,box-shadow .15s}
+textarea:focus{border-color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+textarea::placeholder{color:var(--subtle)}
+
+.opts{display:flex;gap:20px;margin:16px 0;flex-wrap:wrap;align-items:flex-end}
+.opt-group{display:flex;flex-direction:column;gap:6px}
+.opt-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted)}
+.seg{display:flex;border:2px solid var(--subtle);border-radius:8px;overflow:hidden}
+.seg-btn{padding:5px 14px;font-family:var(--font);font-size:11px;font-weight:800;cursor:pointer;background:transparent;border:none;color:var(--muted);transition:all .15s}
+.seg-btn.active{background:var(--ink);color:#fff}
+
+.color-row{display:flex;gap:12px;align-items:center}
+.color-item{display:flex;flex-direction:column;gap:4px;align-items:center}
+.color-item label{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+input[type=color]{width:36px;height:36px;border:2px solid var(--subtle);border-radius:8px;cursor:pointer;padding:2px;background:var(--white)}
+
+.qr-wrap{display:flex;justify-content:center;padding:20px 0 8px}
+#qrImg{border:2.5px solid var(--ink);border-radius:14px;box-shadow:3px 4px 0 var(--ink);display:none;max-width:100%}
+.qr-placeholder{width:200px;height:200px;border:2.5px dashed var(--subtle);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--subtle);font-size:12px;font-weight:700}
+.qr-err{color:#c0392b;font-size:12px;font-weight:700;text-align:center;padding:8px 0;display:none}
+
+.card-footer{display:flex;align-items:center;justify-content:space-between;padding:14px 28px 18px;border-top:2px solid #eeebe2;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;background:var(--accent);color:var(--ink);border:2.5px solid var(--ink);border-radius:14px;font-family:var(--font);font-size:14px;font-weight:900;cursor:pointer;box-shadow:3px 4px 0 var(--ink);transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s;text-decoration:none}
+.btn:hover{transform:translateY(-3px);box-shadow:4px 7px 0 var(--ink)}
+.btn:active{transform:scale(.97);box-shadow:1px 2px 0 var(--ink)}
+.btn:disabled,.btn[disabled]{opacity:.4;cursor:not-allowed;transform:none;box-shadow:3px 4px 0 var(--ink)}
+.btn-ghost{background:transparent;box-shadow:none;border-color:var(--subtle);color:var(--muted)}
+.btn-ghost:hover{box-shadow:none;transform:none;background:var(--surface);border-color:var(--ink);color:var(--ink)}
+.footer-hint{font-size:12px;font-weight:600;color:var(--subtle)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media(max-width:600px){
+  .page{padding:0 14px 36px}
+  header{padding:18px 0 20px}
+  .card-body{padding:20px 18px 16px}
+  .card-footer{padding:12px 18px 16px;flex-direction:column}
+  .btn{width:100%;justify-content:center}
+  .opts{gap:14px}
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/qr.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/qr.png">
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+    <a class="nav-link" href="//hrz.lol">all tools</a>
+  </header>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="card-title">qr code</div>
+      <div class="card-sub">generate a qr code for any text or url</div>
+
+      <label class="input-label">content</label>
+      <textarea id="qrInput" placeholder="https://hrz.lol" spellcheck="false" autocomplete="off"></textarea>
+
+      <div class="opts">
+        <div class="opt-group">
+          <span class="opt-label">size</span>
+          <div class="seg" id="sizeGroup">
+            <button class="seg-btn" data-size="150">S</button>
+            <button class="seg-btn active" data-size="200">M</button>
+            <button class="seg-btn" data-size="300">L</button>
+            <button class="seg-btn" data-size="400">XL</button>
+          </div>
+        </div>
+        <div class="opt-group">
+          <span class="opt-label">error correction</span>
+          <div class="seg" id="ecGroup">
+            <button class="seg-btn active" data-ec="L">L</button>
+            <button class="seg-btn" data-ec="M">M</button>
+            <button class="seg-btn" data-ec="Q">Q</button>
+            <button class="seg-btn" data-ec="H">H</button>
+          </div>
+        </div>
+        <div class="opt-group">
+          <span class="opt-label">colors</span>
+          <div class="color-row">
+            <div class="color-item">
+              <label>dark</label>
+              <input type="color" id="colorDark" value="#111111">
+            </div>
+            <div class="color-item">
+              <label>light</label>
+              <input type="color" id="colorLight" value="#faf8f3">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="qr-wrap">
+        <div class="qr-placeholder" id="qrPlaceholder">type something above</div>
+        <img id="qrImg" alt="QR code">
+        <div class="qr-err" id="qrErr"></div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <span class="footer-hint" id="hint">paste text or url above</span>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn btn-ghost" id="dlBtn" style="display:none" download="qrcode.png">download</a>
+        <button class="btn" onclick="copyImg()" id="copyImgBtn" disabled>copy image</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let qrSize = 200;
+let qrEC   = 'L';
+
+document.querySelectorAll('#sizeGroup .seg-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#sizeGroup .seg-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    qrSize = parseInt(b.dataset.size);
+    generate();
+  });
+});
+
+document.querySelectorAll('#ecGroup .seg-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#ecGroup .seg-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    qrEC = b.dataset.ec;
+    generate();
+  });
+});
+
+document.getElementById('colorDark').addEventListener('input', () => generate());
+document.getElementById('colorLight').addEventListener('input', () => generate());
+
+function buildUrl(text) {
+  const p = new URLSearchParams({
+    text,
+    size: qrSize,
+    ec: qrEC,
+    dark:  document.getElementById('colorDark').value,
+    light: document.getElementById('colorLight').value,
+  });
+  return '/api/qr?' + p.toString();
+}
+
+function generate() {
+  const text = document.getElementById('qrInput').value.trim();
+  const img  = document.getElementById('qrImg');
+  const ph   = document.getElementById('qrPlaceholder');
+  const err  = document.getElementById('qrErr');
+  const dl   = document.getElementById('dlBtn');
+  const copy = document.getElementById('copyImgBtn');
+
+  if (!text) {
+    img.style.display = 'none';
+    ph.style.display  = 'flex';
+    err.style.display = 'none';
+    dl.style.display  = 'none';
+    copy.disabled = true;
+    document.getElementById('hint').textContent = 'paste text or url above';
+    return;
+  }
+
+  const url = buildUrl(text);
+  img.onload = () => {
+    ph.style.display  = 'none';
+    err.style.display = 'none';
+    img.style.display = 'block';
+    dl.href = url;
+    dl.style.display = 'inline-flex';
+    copy.disabled = false;
+    document.getElementById('hint').textContent = `${text.length} chars · ${qrSize}×${qrSize}px`;
+  };
+  img.onerror = () => {
+    img.style.display = 'none';
+    ph.style.display  = 'none';
+    err.textContent   = 'failed to generate — try shorter text';
+    err.style.display = 'block';
+    dl.style.display  = 'none';
+    copy.disabled = true;
+  };
+  img.src = url;
+}
+
+async function copyImg() {
+  const text = document.getElementById('qrInput').value.trim();
+  if (!text) return;
+  try {
+    const resp = await fetch(buildUrl(text));
+    const blob = await resp.blob();
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    const btn = document.getElementById('copyImgBtn');
+    btn.textContent = 'copied!';
+    setTimeout(() => { btn.textContent = 'copy image'; }, 2000);
+  } catch { }
+}
+
+let debTimer;
+document.getElementById('qrInput').addEventListener('input', () => {
+  clearTimeout(debTimer);
+  debTimer = setTimeout(generate, 300);
+});
+</script>
+</body>
+</html>

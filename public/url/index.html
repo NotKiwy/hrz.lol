@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URL Parser – Inspect & Build URLs – hrz.lol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent}a:focus{outline:none}a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow-x:hidden}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 48px}
+header{width:100%;max-width:720px;display:flex;align-items:center;justify-content:space-between;padding:24px 0 28px;animation:fadeUp .4s ease both}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--muted)}
+.nav-link{font-size:12px;font-weight:800;color:var(--muted);text-decoration:none;padding:4px 12px;border:2px solid var(--subtle);border-radius:999px;transition:border-color .15s,color .15s}
+.nav-link:hover{border-color:var(--ink);color:var(--ink)}
+
+.wrap{width:100%;max-width:720px;display:flex;flex-direction:column;gap:16px;animation:fadeUp .4s .06s ease both}
+
+.input-wrap{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:3px 4px 0 var(--ink);padding:20px}
+.input-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:8px;display:block}
+.url-input-row{display:flex;gap:10px;align-items:stretch}
+input[type=text]{flex:1;padding:11px 14px;border:2px solid var(--subtle);border-radius:12px;font-family:var(--mono);font-size:13px;background:var(--bg);color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s}
+input[type=text]:focus{border-color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+input[type=text]::placeholder{color:var(--subtle)}
+.parse-btn{padding:10px 22px;background:var(--accent);color:var(--ink);border:2.5px solid var(--ink);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:900;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:2px 3px 0 var(--ink)}
+.parse-btn:hover{transform:translateY(-2px);box-shadow:3px 5px 0 var(--ink)}
+.parse-btn:active{transform:scale(.97);box-shadow:1px 1px 0 var(--ink)}
+
+.section{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:3px 4px 0 var(--ink);display:none}
+.section.show{display:block}
+.sec-head{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:var(--surface);border-bottom:2px solid var(--ink)}
+.sec-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted)}
+.copy-btn{padding:3px 10px;border:1.5px solid var(--subtle);border-radius:6px;font-family:var(--font);font-size:10px;font-weight:800;cursor:pointer;background:transparent;color:var(--muted);transition:all .1s}
+.copy-btn:hover{border-color:var(--ink);color:var(--ink)}
+.copy-btn.ok{border-color:#4caf50;color:#2e7d32}
+
+.parts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0;padding:0}
+.part-row{display:flex;flex-direction:column;padding:12px 18px;border-bottom:1px solid #eeebe2}
+.part-row:last-child{border-bottom:none}
+.part-key{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:3px}
+.part-val{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink);word-break:break-all}
+.part-val.empty{color:var(--subtle);font-style:italic}
+
+.params-table{width:100%;border-collapse:collapse}
+.params-table th{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:8px 18px;border-bottom:1.5px solid #eeebe2;background:var(--surface)}
+.params-table td{padding:9px 18px;font-family:var(--mono);font-size:12px;border-bottom:1px solid #f0ede4;word-break:break-all}
+.params-table tr:last-child td{border-bottom:none}
+.params-table td:first-child{font-weight:700;color:#1a5fa8;width:35%}
+
+.err{padding:14px 18px;font-size:13px;font-weight:700;color:#c0392b}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media(max-width:600px){
+  .page{padding:0 14px 36px}
+  header{padding:18px 0 20px}
+  .url-input-row{flex-direction:column}
+  .parse-btn{width:100%}
+  .parts-grid{grid-template-columns:1fr}
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/url.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/url.png">
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+    <a class="nav-link" href="//hrz.lol">all tools</a>
+  </header>
+
+  <div class="wrap">
+    <div class="input-wrap">
+      <label class="input-label">url</label>
+      <div class="url-input-row">
+        <input type="text" id="urlInput" placeholder="https://example.com/path?foo=bar&baz=1#anchor" spellcheck="false" autocomplete="off">
+        <button class="parse-btn" onclick="parseURL()">parse</button>
+      </div>
+    </div>
+
+    <div class="section" id="errSection">
+      <div class="sec-head"><span class="sec-label">error</span></div>
+      <div class="err" id="errMsg"></div>
+    </div>
+
+    <div class="section" id="partsSection">
+      <div class="sec-head">
+        <span class="sec-label">components</span>
+        <button class="copy-btn" id="copyFull" onclick="copyFull()">copy full url</button>
+      </div>
+      <div class="parts-grid" id="partsGrid"></div>
+    </div>
+
+    <div class="section" id="paramsSection">
+      <div class="sec-head"><span class="sec-label">query parameters</span></div>
+      <table class="params-table">
+        <thead><tr><th>key</th><th>value</th></tr></thead>
+        <tbody id="paramsBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function parseURL() {
+  const raw = document.getElementById('urlInput').value.trim();
+  hide('errSection'); hide('partsSection'); hide('paramsSection');
+
+  if (!raw) return;
+
+  let u;
+  try { u = new URL(raw); } catch {
+    show('errSection');
+    document.getElementById('errMsg').textContent = 'invalid url — make sure to include the protocol (https://)';
+    return;
+  }
+
+  const parts = [
+    { key: 'protocol', val: u.protocol },
+    { key: 'host',     val: u.host },
+    { key: 'hostname', val: u.hostname },
+    { key: 'port',     val: u.port || '(default)' },
+    { key: 'pathname', val: u.pathname },
+    { key: 'search',   val: u.search || '(none)' },
+    { key: 'hash',     val: u.hash || '(none)' },
+    { key: 'origin',   val: u.origin },
+  ];
+
+  const grid = document.getElementById('partsGrid');
+  grid.innerHTML = parts.map(p => `
+    <div class="part-row">
+      <div class="part-key">${p.key}</div>
+      <div class="part-val${p.val.startsWith('(') ? ' empty' : ''}">${escHtml(p.val)}</div>
+    </div>`).join('');
+  show('partsSection');
+
+  const params = [...u.searchParams.entries()];
+  if (params.length) {
+    document.getElementById('paramsBody').innerHTML = params.map(([k, v]) =>
+      `<tr><td>${escHtml(k)}</td><td>${escHtml(v)}</td></tr>`).join('');
+    show('paramsSection');
+  }
+}
+
+function show(id) { document.getElementById(id).classList.add('show'); }
+function hide(id) { document.getElementById(id).classList.remove('show'); }
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function copyFull() {
+  const val = document.getElementById('urlInput').value.trim();
+  if (!val) return;
+  navigator.clipboard.writeText(val);
+  const btn = document.getElementById('copyFull');
+  btn.textContent = 'copied!';
+  btn.classList.add('ok');
+  setTimeout(() => { btn.textContent = 'copy full url'; btn.classList.remove('ok'); }, 2000);
+}
+
+document.getElementById('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') parseURL();
+});
+
+document.getElementById('urlInput').addEventListener('input', () => {
+  clearTimeout(window._urlT);
+  window._urlT = setTimeout(parseURL, 300);
+});
+</script>
+</body>
+</html>

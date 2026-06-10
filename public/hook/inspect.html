@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Webhook Inspector &amp; Tester – hrz.lol</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #faf8f3; --white: #fff; --ink: #111; --muted: #777770;
+  --subtle: #c4c2ba; --surface: #f3f0e8; --accent: #f0c040; --font: 'Nunito', sans-serif;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); display: flex; flex-direction: column; }
+
+.topbar {
+  display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+  background: var(--white); border-bottom: 2.5px solid var(--ink); flex-shrink: 0;
+}
+.logo { font-weight: 900; font-size: 18px; letter-spacing: -0.04em; }
+.logo span { color: var(--muted); }
+.url-box {
+  flex: 1; background: var(--surface); border: 2px solid var(--ink); border-radius: 10px;
+  padding: 7px 14px; font-family: monospace; font-size: 13px; font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.copy-btn {
+  padding: 7px 16px; background: var(--accent); border: 2px solid var(--ink);
+  border-radius: 10px; font-family: var(--font); font-size: 13px; font-weight: 800;
+  cursor: pointer; white-space: nowrap; transition: transform .1s;
+}
+.copy-btn:hover { transform: translateY(-1px); }
+.status { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: #2ecc71; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.layout { display: flex; flex: 1; overflow: hidden; }
+
+.sidebar {
+  width: 300px; flex-shrink: 0; border-right: 2.5px solid var(--ink);
+  overflow-y: auto; background: var(--white);
+}
+.sidebar-header {
+  padding: 14px 16px; border-bottom: 2px solid var(--surface);
+  font-size: 11px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--muted); display: flex; align-items: center; justify-content: space-between;
+}
+.clear-btn {
+  font-size: 11px; font-weight: 800; color: var(--muted); cursor: pointer;
+  padding: 2px 8px; border: 1.5px solid var(--subtle); border-radius: 6px;
+  background: transparent; font-family: var(--font);
+}
+.clear-btn:hover { border-color: var(--ink); color: var(--ink); }
+.req-item {
+  padding: 12px 16px; border-bottom: 1.5px solid var(--surface); cursor: pointer;
+  transition: background .1s; display: flex; align-items: center; gap: 10px;
+}
+.req-item:hover { background: var(--surface); }
+.req-item.active { background: var(--accent); }
+.method-badge {
+  font-size: 10px; font-weight: 900; padding: 2px 8px; border-radius: 6px;
+  border: 1.5px solid var(--ink); flex-shrink: 0; font-family: monospace;
+}
+.method-GET    { background: #d5f5e3; }
+.method-POST   { background: #d6eaf8; }
+.method-PUT    { background: #fdebd0; }
+.method-PATCH  { background: #e8daef; }
+.method-DELETE { background: #fadbd8; }
+.method-OTHER  { background: var(--surface); }
+.req-path { font-size: 13px; font-weight: 700; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.req-time { font-size: 11px; color: var(--muted); font-weight: 600; margin-left: auto; flex-shrink: 0; }
+
+.detail { flex: 1; overflow-y: auto; padding: 24px; }
+.empty-state {
+  height: 100%; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 12px; color: var(--muted);
+}
+.empty-state .big { font-size: 40px; }
+.empty-state p { font-size: 15px; font-weight: 700; text-align: center; }
+.empty-state code {
+  background: var(--surface); border: 2px solid var(--ink); border-radius: 8px;
+  padding: 6px 14px; font-size: 13px; font-family: monospace; font-weight: 700;
+}
+
+.section { margin-bottom: 24px; }
+.section-title {
+  font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); margin-bottom: 10px;
+}
+.kv-table { width: 100%; border-collapse: collapse; }
+.kv-table tr:hover { background: var(--surface); }
+.kv-table td { padding: 7px 10px; font-size: 13px; border-bottom: 1px solid var(--surface); }
+.kv-table td:first-child { font-weight: 800; color: var(--muted); width: 40%; font-family: monospace; }
+.kv-table td:last-child { font-weight: 600; word-break: break-all; font-family: monospace; }
+.body-block {
+  background: var(--ink); color: #f8f8f2; border-radius: 12px; padding: 16px;
+  font-family: monospace; font-size: 13px; line-height: 1.6; white-space: pre-wrap;
+  word-break: break-all; max-height: 400px; overflow-y: auto;
+}
+
+@keyframes slideIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: translateX(0); } }
+.req-item { animation: slideIn .2s ease both; }
+</style>
+<meta property="og:image" content="https://hrz.lol/og/hook.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/hook.png">
+</head>
+<body>
+<div class="topbar">
+  <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+  <div class="url-box" id="hookUrl"></div>
+  <button class="copy-btn" id="copyBtn">copy url</button>
+  <div class="status"><div class="pulse"></div><span>listening</span></div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span>requests (<span id="count">0</span>)</span>
+      <button class="clear-btn" id="clearBtn">clear</button>
+    </div>
+    <div id="reqList"></div>
+  </div>
+  <div class="detail" id="detail">
+    <div class="empty-state">
+      <div class="big">–</div>
+      <p>waiting for requests</p>
+      <p>send anything to:</p>
+      <code id="urlHint"></code>
+    </div>
+  </div>
+</div>
+
+<script>
+const hookId  = location.pathname.split('/').pop();
+const hookUrl = location.origin + '/h/' + hookId;
+document.getElementById('hookUrl').textContent = hookUrl;
+document.getElementById('urlHint').textContent  = hookUrl;
+document.getElementById('copyBtn').onclick = () => {
+  navigator.clipboard.writeText(hookUrl);
+  document.getElementById('copyBtn').textContent = 'copied!';
+  setTimeout(() => document.getElementById('copyBtn').textContent = 'copy url', 2000);
+};
+
+let requests  = [];
+let activeId  = null;
+
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - ts) / 1000);
+  if (s < 5)   return 'just now';
+  if (s < 60)  return s + 's ago';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  return Math.floor(s/3600) + 'h ago';
+}
+
+function methodClass(m) {
+  if (['GET','POST','PUT','PATCH','DELETE'].includes(m)) return 'method-' + m;
+  return 'method-OTHER';
+}
+
+function renderList() {
+  const list = document.getElementById('reqList');
+  list.innerHTML = '';
+  document.getElementById('count').textContent = requests.length;
+  requests.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'req-item' + (r.id === activeId ? ' active' : '');
+    div.innerHTML = `
+      <div class="method-badge ${methodClass(r.method)}">${r.method}</div>
+      <div class="req-path">${r.path}</div>
+      <div class="req-time">${timeAgo(r.ts)}</div>`;
+    div.onclick = () => { activeId = r.id; renderList(); renderDetail(r); };
+    list.appendChild(div);
+  });
+}
+
+function renderDetail(r) {
+  const d = document.getElementById('detail');
+  const queryKeys = Object.keys(r.query || {});
+  d.innerHTML = `
+    <div class="section">
+      <div class="section-title">request</div>
+      <table class="kv-table">
+        <tr><td>method</td><td>${r.method}</td></tr>
+        <tr><td>path</td><td>${r.path}</td></tr>
+        <tr><td>time</td><td>${new Date(r.ts).toLocaleTimeString()}</td></tr>
+      </table>
+    </div>
+    ${queryKeys.length ? `<div class="section">
+      <div class="section-title">query params</div>
+      <table class="kv-table">${queryKeys.map(k=>`<tr><td>${k}</td><td>${r.query[k]}</td></tr>`).join('')}</table>
+    </div>` : ''}
+    <div class="section">
+      <div class="section-title">headers</div>
+      <table class="kv-table">${Object.entries(r.headers||{}).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>
+    </div>
+    ${r.body !== null && r.body !== undefined ? `<div class="section">
+      <div class="section-title">body</div>
+      <div class="body-block">${typeof r.body === 'string' ? r.body : JSON.stringify(r.body, null, 2)}</div>
+    </div>` : ''}`;
+}
+
+document.getElementById('clearBtn').onclick = () => {
+  requests = []; activeId = null;
+  renderList();
+  document.getElementById('detail').innerHTML = '<div class="empty-state"><div class="big">–</div><p>cleared</p></div>';
+};
+
+const es = new EventSource('/hook/' + hookId + '/stream');
+es.onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  if (data.type === 'history') {
+    requests = data.requests;
+    renderList();
+    if (requests.length) renderDetail(requests[0]);
+  } else if (data.type === 'request') {
+    requests.unshift(data.request);
+    if (requests.length > 50) requests.pop();
+    renderList();
+    activeId = data.request.id;
+    renderDetail(data.request);
+  }
+};
+</script>
+</body>
+</html>

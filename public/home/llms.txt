@@ -1,0 +1,36 @@
+# hrz.lol
+
+> A free, no-account collection of useful developer tools.
+
+hrz.lol is an open toolbox with 23 utilities for developers and everyday users. No sign-ups, no tracking, no noise – just tools that work. All tools run either fully in-browser or via a lightweight server.
+
+## Tools
+
+- [Paste](https://paste.hrz.lol/): Code and text sharing with syntax highlighting for 25+ languages. Supports burn-after-read and expiry timers.
+- [Link Shortener](https://lnk.hrz.lol/): Shorten any URL instantly. Supports click-count expiry.
+- [Image Converter](https://conv.hrz.lol/): Convert images between JPG, PNG, WebP, AVIF, TIFF, and GIF with quality control.
+- [Ephemeral Chat](https://chat.hrz.lol/): Anonymous real-time chat rooms. No accounts. Rooms delete themselves when everyone leaves.
+- [Collaborative Draw](https://draw.hrz.lol/): Real-time collaborative whiteboard. Share a link, draw together.
+- [Webhook Inspector](https://hook.hrz.lol/): Get a temporary URL and inspect every HTTP request hitting it live via SSE.
+- [Placeholder Images](https://img.hrz.lol/): Generate placeholder images by URL. Format: /img/WxH/hexcolor/label
+- [Fake Data Generator](https://fake.hrz.lol/): Generate realistic test data with 20 field types. Export as JSON, CSV, or SQL.
+- [JSON Formatter](https://json.hrz.lol/): Format, validate, and explore JSON. Collapse/expand nodes, copy paths.
+- [Cron Builder](https://cron.hrz.lol/): Build cron expressions visually with human-readable descriptions and next run times.
+- [Diff Viewer](https://diff.hrz.lol/): Compare two texts line by line, GitHub-style. Split and unified views.
+- [Meta Preview](https://meta.hrz.lol/): See how a URL looks when shared on Telegram or Twitter/X. OG tags inspector.
+- [Timestamp Converter](https://ts.hrz.lol/): Unix timestamp ↔ human-readable date converter with timezone support and live ticker.
+- [Markdown Editor](https://md.hrz.lol/): Live markdown editor with preview, toolbar shortcuts, and HTML export.
+- [Color Tool](https://color.hrz.lol/): Hex/RGB/HSL converter, palette generator (shades, tints, analogous, triad, complement), WCAG contrast checker.
+- [Hash Generator](https://hash.hrz.lol/): Compute MD5, SHA-1, SHA-256, SHA-384, SHA-512 hashes from text or file input.
+- [JWT Decoder](https://jwt.hrz.lol/): Decode and inspect JWT tokens. Header, payload, signature. Expiry status with time remaining.
+- [Encode / Decode](https://enc.hrz.lol/): Base64, URL encoding, HTML entities, and Hex encode/decode with live preview.
+- [QR Code Generator](https://qr.hrz.lol/): Generate QR codes for any text or URL. Custom colors, sizes, error correction levels.
+- [URL Parser](https://url.hrz.lol/): Break down any URL into components: protocol, host, path, query params, hash.
+- [WHOIS Lookup](https://whois.hrz.lol/): Domain registration info via RDAP. Registrar, registration/expiry dates, nameservers.
+- [Char Counter](https://chars.hrz.lol/): Count characters, words, lines, sentences, paragraphs. Read time and character frequency analysis.
+- [HTTP Client](https://req.hrz.lol/): Send HTTP requests from the browser with custom headers and body. All methods supported.
+
+## Optional
+
+- [Sitemap](https://hrz.lol/sitemap.xml)
+- [Robots](https://hrz.lol/robots.txt)

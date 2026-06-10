@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>support us &mdash; hrz.lol</title>
+<meta name="description" content="Support hrz.lol — pay via fiat or crypto.">
+<meta property="og:title" content="support us &mdash; hrz.lol">
+<meta property="og:description" content="keep the servers running.">
+<meta property="og:image" content="https://hrz.lol/og/home.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+a { -webkit-tap-highlight-color: transparent; color: inherit; text-decoration: none; }
+button { font-family: inherit; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --bg:#faf8f3; --white:#fff; --ink:#111; --muted:#777770;
+  --subtle:#c4c2ba; --surface:#f3f0e8; --accent:#f0c040; --font:'Nunito',sans-serif;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font);
+  display: flex; flex-direction: column;
+  min-height: 100dvh; overflow-x: hidden;
+}
+
+.topbar {
+  width: 100%; max-width: 720px; margin: 0 auto;
+  padding: 24px 24px 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo { font-size: 22px; font-weight: 900; letter-spacing: -0.04em; color: var(--ink); }
+.logo span { color: var(--muted); font-weight: 700; }
+.back-btn {
+  padding: 8px 14px; border: 2px solid var(--ink); border-radius: 999px;
+  background: var(--white); font-weight: 800; font-size: 13px;
+  box-shadow: 2px 3px 0 var(--ink); transition: transform .15s, box-shadow .15s;
+}
+.back-btn:hover { transform: translateY(-2px); box-shadow: 3px 5px 0 var(--ink); }
+
+main {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 24px; gap: 44px;
+}
+
+.hero { text-align: center; max-width: 540px; animation: fadeUp .4s ease both; }
+.hero h1 {
+  font-size: clamp(44px, 9vw, 76px); font-weight: 900; letter-spacing: -0.05em;
+  line-height: 1; margin-bottom: 18px;
+}
+.hero p { font-size: 16px; font-weight: 600; color: var(--muted); line-height: 1.55; }
+
+.actions {
+  display: flex; flex-direction: column; gap: 22px;
+  width: 100%; max-width: 380px;
+  animation: fadeUp .4s .08s ease both;
+}
+
+.action { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.action-btn {
+  width: 100%;
+  padding: 22px 26px; border: 3px solid var(--ink); border-radius: 18px;
+  background: var(--accent); color: var(--ink);
+  font-family: var(--font); font-size: 20px; font-weight: 900; letter-spacing: -0.02em;
+  cursor: pointer;
+  box-shadow: 5px 6px 0 var(--ink);
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s;
+  display: inline-flex; align-items: center; justify-content: center;
+  text-align: center;
+}
+.action-btn:hover  { transform: translateY(-3px); box-shadow: 6px 9px 0 var(--ink); }
+.action-btn:active { transform: scale(.97); box-shadow: 2px 3px 0 var(--ink); }
+.action-btn.outline { background: var(--white); }
+.action-sub {
+  font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--muted); text-align: center;
+}
+
+footer {
+  padding: 24px; text-align: center;
+  font-size: 12px; font-weight: 700; color: var(--subtle); line-height: 1.6;
+  position: relative; z-index: 1;
+}
+footer a { text-decoration: underline; color: var(--muted); }
+
+.flash {
+  position: fixed; inset: 0; z-index: 999; pointer-events: none;
+  background: var(--flash-color, #f0c040);
+  -webkit-clip-path: circle(0% at var(--fx, 50%) var(--fy, 50%));
+          clip-path: circle(0% at var(--fx, 50%) var(--fy, 50%));
+  animation: flashCover .45s cubic-bezier(.55,0,.2,1) forwards;
+}
+@keyframes flashCover {
+  to {
+    -webkit-clip-path: circle(160% at var(--fx, 50%) var(--fy, 50%));
+            clip-path: circle(160% at var(--fx, 50%) var(--fy, 50%));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flash { display: none !important; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  main { padding: 28px 18px; gap: 32px; }
+  .hero p { font-size: 15px; }
+  .action-btn { font-size: 18px; padding: 20px 22px; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+  <a class="back-btn" href="//hrz.lol" data-flash="#faf8f3">&larr; back</a>
+</div>
+
+<main>
+  <div class="hero">
+    <h1>support us</h1>
+    <p>no ads, no trackers, no accounts &mdash; just servers that need to stay online. if any tool here saved you a click, a small tip keeps the lights on.</p>
+  </div>
+
+  <div class="actions">
+    <div class="action">
+      <a class="action-btn" href="https://pay.cloudtips.ru/p/1900fcd8" target="_blank" rel="noopener">Pay via Fiat</a>
+      <div class="action-sub">SBP &middot; T-Bank &middot; RU Cards</div>
+    </div>
+
+    <div class="action">
+      <a class="action-btn outline" href="/support/crypto" data-flash="#f0c040">Pay via Crypto</a>
+      <div class="action-sub">BTC &middot; ETH &middot; TON</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  open source &middot; <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">agpl-3.0</a>
+</footer>
+
+<script>
+function flashTo(color, origin, url) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    location.href = url; return;
+  }
+  const f = document.createElement('div');
+  f.className = 'flash';
+  f.style.setProperty('--flash-color', color);
+  if (origin) {
+    f.style.setProperty('--fx', `${origin.left + origin.width / 2}px`);
+    f.style.setProperty('--fy', `${origin.top  + origin.height / 2}px`);
+  }
+  document.body.appendChild(f);
+  setTimeout(() => { location.href = url; }, 460);
+}
+
+document.querySelectorAll('a[data-flash]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank') return;
+    e.preventDefault();
+    flashTo(a.dataset.flash, a.getBoundingClientRect(), a.getAttribute('href'));
+  });
+});
+</script>
+</body>
+</html>

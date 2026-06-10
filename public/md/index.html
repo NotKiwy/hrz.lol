@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Markdown Editor – hrz.lol</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{height:100%;overflow:hidden}
+a{-webkit-tap-highlight-color:transparent}a:focus{outline:none}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);display:flex;flex-direction:column}
+
+.topbar{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--white);border-bottom:2.5px solid var(--ink);flex-shrink:0;flex-wrap:wrap}
+.logo{font-size:20px;font-weight:900;letter-spacing:-0.04em;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--muted)}
+.sep{width:1px;height:20px;background:var(--subtle)}
+.title{font-size:14px;font-weight:800;color:var(--muted)}
+.tb-btn{padding:6px 14px;border:2px solid var(--ink);border-radius:8px;font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;background:var(--white);transition:background .1s,transform .1s}
+.tb-btn:hover{background:var(--surface);transform:translateY(-1px)}
+.tb-btn.accent{background:var(--accent)}
+.fmt-btn{padding:5px 10px;border:2px solid var(--subtle);border-radius:7px;font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer;background:var(--bg);color:var(--muted);transition:border-color .1s,background .1s}
+.fmt-btn:hover{border-color:var(--ink);background:var(--surface)}
+.stats{font-size:11px;font-weight:700;color:var(--muted);margin-left:auto}
+
+.layout{flex:1;display:grid;grid-template-columns:1fr 1fr;overflow:hidden}
+.pane{display:flex;flex-direction:column;overflow:hidden}
+.pane:first-child{border-right:2.5px solid var(--ink)}
+.pane-header{padding:9px 16px;background:var(--surface);border-bottom:2px solid var(--ink);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);flex-shrink:0}
+textarea{flex:1;resize:none;border:none;outline:none;padding:16px;font-family:var(--mono);font-size:13px;font-weight:500;line-height:1.7;background:var(--white);color:var(--ink);tab-size:2}
+textarea::placeholder{color:var(--subtle)}
+
+.preview{flex:1;overflow-y:auto;padding:24px 28px;background:var(--white);font-size:15px;line-height:1.7;color:var(--ink)}
+.preview h1,.preview h2,.preview h3,.preview h4{font-weight:900;letter-spacing:-0.03em;margin:1.4em 0 0.5em}
+.preview h1{font-size:28px;border-bottom:2.5px solid var(--ink);padding-bottom:8px}
+.preview h2{font-size:22px;border-bottom:1.5px solid var(--surface);padding-bottom:6px}
+.preview h3{font-size:18px}
+.preview p{margin-bottom:1em}
+.preview ul,.preview ol{margin:0 0 1em 1.5em}
+.preview li{margin-bottom:0.3em}
+.preview code{font-family:var(--mono);font-size:12px;background:var(--surface);padding:2px 6px;border-radius:5px;font-weight:600}
+.preview pre{background:var(--ink);border-radius:12px;padding:16px;margin-bottom:1em;overflow-x:auto}
+.preview pre code{background:transparent;color:#f8f8f2;padding:0;font-size:12px}
+.preview blockquote{border-left:4px solid var(--accent);padding-left:16px;color:var(--muted);margin-bottom:1em}
+.preview table{border-collapse:collapse;margin-bottom:1em;width:100%}
+.preview th{background:var(--surface);padding:8px 12px;border:1.5px solid var(--subtle);font-weight:900;font-size:12px;text-transform:uppercase;letter-spacing:0.05em}
+.preview td{padding:8px 12px;border:1.5px solid var(--subtle)}
+.preview a{color:#1a5fa8;text-decoration:underline}
+.preview img{max-width:100%;border-radius:8px}
+.preview hr{border:none;border-top:2px solid var(--surface);margin:1.5em 0}
+.preview strong{font-weight:900}
+
+.tab-row{display:none}
+@media(max-width:640px){
+  .topbar{flex-wrap:wrap;gap:4px;padding:8px 10px}
+  .stats{margin-left:0;order:10;width:100%}
+  .layout{grid-template-columns:1fr!important}
+  .tab-row{display:flex;background:var(--white);border-bottom:2.5px solid var(--ink);flex-shrink:0}
+  .tab-btn{flex:1;padding:8px;border:none;font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:var(--muted);border-bottom:3px solid transparent}
+  .tab-btn.active{color:var(--ink);border-bottom-color:var(--accent)}
+  .pane{height:calc(100vh - 120px)}
+  .pane:first-child{border-right:none}
+  .pane.hidden-mobile{display:none}
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/md.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/md.png">
+</head>
+<body>
+<div class="topbar">
+  <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+  <div class="sep"></div>
+  <div class="title">markdown</div>
+  <button class="fmt-btn" onclick="insertFmt('**','**')"><b>B</b></button>
+  <button class="fmt-btn" onclick="insertFmt('*','*')"><i>I</i></button>
+  <button class="fmt-btn" onclick="insertFmt('`','`')">` `</button>
+  <button class="fmt-btn" onclick="insertLine('# ')">H1</button>
+  <button class="fmt-btn" onclick="insertLine('## ')">H2</button>
+  <button class="fmt-btn" onclick="insertLine('- ')">list</button>
+  <button class="fmt-btn" onclick="insertLine('> ')">quote</button>
+  <button class="fmt-btn" onclick="insertFmt('\n```\n','\n```\n')">block</button>
+  <div class="stats" id="stats">0 words · 0 lines</div>
+  <button class="tb-btn" onclick="clearAll()">clear</button>
+  <button class="tb-btn" onclick="copyHtml()">copy html</button>
+  <button class="tb-btn accent" onclick="exportHtml()">export html</button>
+</div>
+
+<div class="tab-row">
+  <button class="tab-btn active" id="tabEdit" onclick="switchTab('edit')">markdown</button>
+  <button class="tab-btn" id="tabPreview" onclick="switchTab('preview')">preview</button>
+</div>
+<div class="layout">
+  <div class="pane" id="paneEdit">
+    <div class="pane-header">markdown</div>
+    <textarea id="editor" placeholder="# hello world&#10;&#10;start writing markdown here..." spellcheck="false"></textarea>
+  </div>
+  <div class="pane" id="panePreview">
+    <div class="pane-header">preview</div>
+    <div class="preview" id="preview"></div>
+  </div>
+</div>
+
+<script>
+const editor  = document.getElementById('editor');
+const preview = document.getElementById('preview');
+
+marked.setOptions({ breaks: true, gfm: true });
+
+function render() {
+  preview.innerHTML = marked.parse(editor.value || '');
+  const words = editor.value.trim().split(/\s+/).filter(Boolean).length;
+  const lines = editor.value.split('\n').length;
+  document.getElementById('stats').textContent = `${words} words · ${lines} lines`;
+}
+
+editor.addEventListener('input', render);
+editor.addEventListener('keydown', e => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const s = editor.selectionStart;
+    editor.value = editor.value.slice(0,s) + '  ' + editor.value.slice(editor.selectionEnd);
+    editor.selectionStart = editor.selectionEnd = s + 2;
+    render();
+  }
+});
+
+function insertFmt(before, after) {
+  const s = editor.selectionStart, e = editor.selectionEnd;
+  const sel = editor.value.slice(s, e) || 'text';
+  editor.value = editor.value.slice(0,s) + before + sel + after + editor.value.slice(e);
+  editor.selectionStart = s + before.length;
+  editor.selectionEnd   = s + before.length + sel.length;
+  editor.focus(); render();
+}
+
+function insertLine(prefix) {
+  const s = editor.selectionStart;
+  const lineStart = editor.value.lastIndexOf('\n', s - 1) + 1;
+  editor.value = editor.value.slice(0, lineStart) + prefix + editor.value.slice(lineStart);
+  editor.selectionStart = editor.selectionEnd = s + prefix.length;
+  editor.focus(); render();
+}
+
+function clearAll() { editor.value = ''; render(); editor.focus(); }
+
+function copyHtml() {
+  navigator.clipboard.writeText(marked.parse(editor.value));
+  const btn = document.querySelector('.tb-btn[onclick="copyHtml()"]');
+  btn.textContent = 'copied!';
+  setTimeout(() => btn.textContent = 'copy html', 2000);
+}
+
+function exportHtml() {
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>document</title><style>body{font-family:system-ui,sans-serif;max-width:720px;margin:40px auto;padding:0 20px;line-height:1.7}code{background:#f4f4f4;padding:2px 6px;border-radius:4px}pre{background:#1e1e1e;color:#f8f8f2;padding:16px;border-radius:8px;overflow-x:auto}blockquote{border-left:4px solid #f0c040;padding-left:16px;color:#666}</style></head><body>${marked.parse(editor.value)}</body></html>`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  a.download = 'document.html'; a.click();
+}
+
+const SAMPLE = `# welcome to markdown\n\nstart typing or **paste** your markdown here.\n\n## features\n\n- live preview\n- syntax highlighting\n- export to html\n- toolbar shortcuts\n\n\`\`\`js\nconsole.log('hello world');\n\`\`\`\n\n> blockquotes look great too\n`;
+editor.value = SAMPLE;
+render();
+
+function switchTab(tab) {
+  const editPane    = document.getElementById('paneEdit');
+  const previewPane = document.getElementById('panePreview');
+  const tabEdit     = document.getElementById('tabEdit');
+  const tabPreview  = document.getElementById('tabPreview');
+  if (tab === 'edit') {
+    editPane.classList.remove('hidden-mobile');
+    previewPane.classList.add('hidden-mobile');
+    tabEdit.classList.add('active');
+    tabPreview.classList.remove('active');
+    editor.focus();
+  } else {
+    editPane.classList.add('hidden-mobile');
+    previewPane.classList.remove('hidden-mobile');
+    tabEdit.classList.remove('active');
+    tabPreview.classList.add('active');
+  }
+}
+</script>
+</body>
+</html>

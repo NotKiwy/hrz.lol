@@ -1,0 +1,9 @@
+/* TEAM */
+Developer: hrz.lol team
+Site: https://hrz.lol
+
+/* SITE */
+Last update: 2026
+Language: English
+Doctype: HTML5
+IDE: various

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JWT Decoder – Inspect Tokens – hrz.lol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent}a:focus{outline:none}a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow-x:hidden}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 48px}
+header{width:100%;max-width:780px;display:flex;align-items:center;justify-content:space-between;padding:24px 0 28px;animation:fadeUp .4s ease both}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--muted)}
+.nav-link{font-size:12px;font-weight:800;color:var(--muted);text-decoration:none;padding:4px 12px;border:2px solid var(--subtle);border-radius:999px;transition:border-color .15s,color .15s}
+.nav-link:hover{border-color:var(--ink);color:var(--ink)}
+
+.input-wrap{width:100%;max-width:780px;animation:fadeUp .4s .04s ease both}
+.input-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:8px;display:block}
+textarea{width:100%;min-height:90px;padding:14px 16px;border:2.5px solid var(--subtle);border-radius:14px;font-family:var(--mono);font-size:12px;line-height:1.6;background:var(--white);color:var(--ink);outline:none;resize:vertical;transition:border-color .15s,box-shadow .15s}
+textarea:focus{border-color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+textarea::placeholder{color:var(--subtle)}
+
+.status-wrap{display:flex;align-items:center;gap:10px;margin:14px 0}
+.status-badge{padding:5px 14px;border-radius:999px;font-size:12px;font-weight:800;border:2px solid transparent}
+.badge-valid  {background:#d5f5e3;border-color:#27ae60;color:#1a7a41}
+.badge-expired{background:#fef3cd;border-color:#f0c040;color:#7d6000}
+.badge-invalid{background:#fadbd8;border-color:#e74c3c;color:#b03030}
+.badge-empty  {background:var(--surface);border-color:var(--subtle);color:var(--muted)}
+.exp-text{font-size:13px;font-weight:700;color:var(--muted)}
+
+.sections{width:100%;max-width:780px;display:flex;flex-direction:column;gap:16px;animation:fadeUp .4s .08s ease both}
+.section{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:3px 4px 0 var(--ink)}
+.sec-header{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:var(--surface);border-bottom:2px solid var(--ink)}
+.sec-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted)}
+.sec-chip{padding:3px 10px;border-radius:999px;font-size:10px;font-weight:800;border:1.5px solid var(--ink)}
+.chip-header {background:#dbeafe;color:#1e3a5f;border-color:#93c5fd}
+.chip-payload{background:#d5f5e3;color:#1a3a2a;border-color:#6ee7b7}
+.chip-sig    {background:#fadbd8;color:#7a1a1a;border-color:#fca5a5}
+.copy-btn{padding:3px 10px;border:1.5px solid var(--subtle);border-radius:6px;font-family:var(--font);font-size:10px;font-weight:800;cursor:pointer;background:transparent;color:var(--muted);transition:all .1s}
+.copy-btn:hover{border-color:var(--ink);color:var(--ink)}
+.copy-btn.ok{border-color:#4caf50;color:#2e7d32}
+pre{padding:16px 18px;font-family:var(--mono);font-size:12px;line-height:1.7;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.sig-val{padding:14px 18px;font-family:var(--mono);font-size:11px;color:var(--muted);word-break:break-all;line-height:1.5}
+
+.j-key{color:#1a5fa8;font-weight:600}
+.j-str{color:#1a7a41}
+.j-num{color:#b7590a;font-weight:700}
+.j-bool{color:#6c3483;font-weight:700}
+.j-null{color:#c0392b;font-weight:700}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+@media(max-width:600px){
+  .page{padding:0 14px 36px}
+  header{padding:18px 0 20px}
+  pre{font-size:11px}
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/jwt.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/jwt.png">
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+    <a class="nav-link" href="//hrz.lol">all tools</a>
+  </header>
+
+  <div class="input-wrap">
+    <label class="input-label">paste jwt token</label>
+    <textarea id="jwtInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signature" spellcheck="false" autocomplete="off"></textarea>
+  </div>
+
+  <div class="status-wrap" id="statusWrap">
+    <span class="status-badge badge-empty" id="statusBadge">waiting for token</span>
+    <span class="exp-text" id="expText"></span>
+  </div>
+
+  <div class="sections" id="sections" style="display:none"></div>
+</div>
+
+<script>
+const jwtInput = document.getElementById('jwtInput');
+
+function b64urlDecode(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) str += '=';
+  return atob(str);
+}
+
+function syntaxHighlight(obj) {
+  const json = JSON.stringify(obj, null, 2);
+  const safe = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return safe.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
+    if (/^"/.test(match)) {
+      if (/:$/.test(match)) return `<span class="j-key">${match}</span>`;
+      return `<span class="j-str">${match}</span>`;
+    }
+    if (/true|false/.test(match)) return `<span class="j-bool">${match}</span>`;
+    if (/null/.test(match))       return `<span class="j-null">${match}</span>`;
+    return `<span class="j-num">${match}</span>`;
+  });
+}
+
+function parse(token) {
+  token = token.trim();
+  if (!token) {
+    setStatus('empty', '', '');
+    document.getElementById('sections').style.display = 'none';
+    return;
+  }
+
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    setStatus('invalid', 'invalid', 'not a valid jwt (expected 3 parts)');
+    document.getElementById('sections').style.display = 'none';
+    return;
+  }
+
+  let header, payload;
+  try {
+    header  = JSON.parse(b64urlDecode(parts[0]));
+    payload = JSON.parse(b64urlDecode(parts[1]));
+  } catch {
+    setStatus('invalid', 'invalid', 'failed to decode — malformed token');
+    document.getElementById('sections').style.display = 'none';
+    return;
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const exp = payload.exp;
+  let badgeClass = 'badge-valid';
+  let badgeText  = 'valid';
+  let expMsg     = '';
+
+  if (exp) {
+    const diff = exp - now;
+    if (diff < 0) {
+      badgeClass = 'badge-expired';
+      badgeText  = 'expired';
+      const ago  = Math.abs(diff);
+      expMsg = `expired ${fmtDuration(ago)} ago`;
+    } else {
+      expMsg = `expires in ${fmtDuration(diff)}`;
+    }
+  }
+
+  setStatus(badgeClass.replace('badge-', ''), badgeText, expMsg);
+
+  const sections = document.getElementById('sections');
+  sections.style.display = 'flex';
+  sections.innerHTML = `
+    <div class="section">
+      <div class="sec-header">
+        <span class="sec-label">header</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="sec-chip chip-header">${esc(header.alg || '?')}</span>
+          <button class="copy-btn" onclick="copyJson(this, ${JSON.stringify(JSON.stringify(header,null,2))})">copy</button>
+        </div>
+      </div>
+      <pre>${syntaxHighlight(header)}</pre>
+    </div>
+    <div class="section">
+      <div class="sec-header">
+        <span class="sec-label">payload</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          ${payload.sub ? `<span class="sec-chip chip-payload">sub: ${esc(String(payload.sub).slice(0,20))}</span>` : ''}
+          <button class="copy-btn" onclick="copyJson(this, ${JSON.stringify(JSON.stringify(payload,null,2))})">copy</button>
+        </div>
+      </div>
+      <pre>${syntaxHighlight(payload)}</pre>
+    </div>
+    <div class="section">
+      <div class="sec-header">
+        <span class="sec-label">signature</span>
+        <span class="sec-chip chip-sig">not verified</span>
+      </div>
+      <div class="sig-val">${esc(parts[2])}</div>
+    </div>`;
+}
+
+function setStatus(type, badge, msg) {
+  const el = document.getElementById('statusBadge');
+  const ex = document.getElementById('expText');
+  el.className = 'status-badge ' + (
+    type === 'empty'   ? 'badge-empty'   :
+    type === 'invalid' ? 'badge-invalid' :
+    type === 'expired' ? 'badge-expired' : 'badge-valid'
+  );
+  el.textContent = badge || 'waiting for token';
+  ex.textContent = msg;
+}
+
+function fmtDuration(s) {
+  if (s < 60)   return `${s}s`;
+  if (s < 3600) return `${Math.floor(s/60)}m`;
+  if (s < 86400)return `${Math.floor(s/3600)}h`;
+  return `${Math.floor(s/86400)}d`;
+}
+
+function esc(s) { return String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function copyJson(btn, val) {
+  navigator.clipboard.writeText(val);
+  btn.textContent = 'copied!';
+  btn.classList.add('ok');
+  setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('ok'); }, 2000);
+}
+
+let debTimer;
+jwtInput.addEventListener('input', () => {
+  clearTimeout(debTimer);
+  debTimer = setTimeout(() => parse(jwtInput.value), 200);
+});
+</script>
+</body>
+</html>

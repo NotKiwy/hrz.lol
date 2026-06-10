@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Character Counter – Text Stats – hrz.lol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent}a:focus{outline:none}a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow-x:hidden}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 48px}
+header{width:100%;max-width:760px;display:flex;align-items:center;justify-content:space-between;padding:24px 0 28px;animation:fadeUp .4s ease both}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--muted)}
+.nav-link{font-size:12px;font-weight:800;color:var(--muted);text-decoration:none;padding:4px 12px;border:2px solid var(--subtle);border-radius:999px;transition:border-color .15s,color .15s}
+.nav-link:hover{border-color:var(--ink);color:var(--ink)}
+
+.wrap{width:100%;max-width:760px;display:flex;flex-direction:column;gap:16px;animation:fadeUp .4s .06s ease both}
+
+.input-card{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:3px 4px 0 var(--ink)}
+.input-header{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:var(--surface);border-bottom:2px solid var(--ink)}
+.input-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted)}
+.clear-btn{padding:3px 10px;border:1.5px solid var(--subtle);border-radius:6px;font-family:var(--font);font-size:10px;font-weight:800;cursor:pointer;background:transparent;color:var(--muted);transition:all .1s}
+.clear-btn:hover{border-color:var(--ink);color:var(--ink)}
+textarea{width:100%;min-height:160px;padding:16px 18px;border:none;font-family:var(--font);font-size:14px;line-height:1.7;background:var(--white);color:var(--ink);outline:none;resize:vertical}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat-card{background:var(--white);border:2.5px solid var(--ink);border-radius:16px;padding:16px 18px;box-shadow:3px 4px 0 var(--ink);display:flex;flex-direction:column;gap:4px}
+.stat-num{font-size:28px;font-weight:900;letter-spacing:-0.04em}
+.stat-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+
+.freq-card{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:3px 4px 0 var(--ink)}
+.sec-head{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:var(--surface);border-bottom:2px solid var(--ink)}
+.sec-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted)}
+.freq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:0;padding:14px 18px}
+.freq-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px}
+.freq-char{font-family:var(--mono);font-size:14px;font-weight:700}
+.freq-count{font-size:10px;font-weight:800;color:var(--muted)}
+.freq-bar-wrap{width:100%;height:3px;background:var(--surface);border-radius:2px;margin-top:2px}
+.freq-bar{height:3px;background:var(--accent);border-radius:2px}
+
+.read-card{background:var(--surface);border:2px solid var(--subtle);border-radius:14px;padding:12px 18px;display:flex;gap:24px;flex-wrap:wrap}
+.read-item{display:flex;flex-direction:column;gap:2px}
+.read-num{font-size:18px;font-weight:900}
+.read-label{font-size:11px;font-weight:700;color:var(--muted)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media(max-width:600px){
+  .page{padding:0 14px 36px}
+  header{padding:18px 0 20px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/chars.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/chars.png">
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+    <a class="nav-link" href="//hrz.lol">all tools</a>
+  </header>
+
+  <div class="wrap">
+    <div class="input-card">
+      <div class="input-header">
+        <span class="input-label">text</span>
+        <button class="clear-btn" onclick="clearText()">clear</button>
+      </div>
+      <textarea id="textInput" placeholder="paste or type your text here..."></textarea>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="sChars">0</div><div class="stat-label">characters</div></div>
+      <div class="stat-card"><div class="stat-num" id="sNoSpace">0</div><div class="stat-label">no spaces</div></div>
+      <div class="stat-card"><div class="stat-num" id="sWords">0</div><div class="stat-label">words</div></div>
+      <div class="stat-card"><div class="stat-num" id="sLines">0</div><div class="stat-label">lines</div></div>
+      <div class="stat-card"><div class="stat-num" id="sSents">0</div><div class="stat-label">sentences</div></div>
+      <div class="stat-card"><div class="stat-num" id="sParagraphs">0</div><div class="stat-label">paragraphs</div></div>
+      <div class="stat-card"><div class="stat-num" id="sUniq">0</div><div class="stat-label">unique words</div></div>
+      <div class="stat-card"><div class="stat-num" id="sBytes">0</div><div class="stat-label">bytes (UTF-8)</div></div>
+    </div>
+
+    <div class="read-card">
+      <div class="read-item"><div class="read-num" id="rTime">0s</div><div class="read-label">read time (~200 wpm)</div></div>
+      <div class="read-item"><div class="read-num" id="sAvgWord">0</div><div class="read-label">avg word length</div></div>
+      <div class="read-item"><div class="read-num" id="sAvgSent">0</div><div class="read-label">avg sentence length</div></div>
+    </div>
+
+    <div class="freq-card" id="freqCard" style="display:none">
+      <div class="sec-head"><span class="sec-label">top characters</span></div>
+      <div class="freq-grid" id="freqGrid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function clearText() {
+  document.getElementById('textInput').value = '';
+  analyse('');
+}
+
+function analyse(text) {
+  const chars      = text.length;
+  const noSpace    = text.replace(/\s/g, '').length;
+  const words      = text.trim() ? text.trim().split(/\s+/).filter(Boolean) : [];
+  const lines      = text ? text.split('\n').length : 0;
+  const sentences  = text.trim() ? (text.match(/[.!?]+/g) || []).length : 0;
+  const paragraphs = text.trim() ? text.split(/\n\s*\n/).filter(p => p.trim()).length : 0;
+  const uniqueW    = new Set(words.map(w => w.toLowerCase().replace(/[^a-z0-9]/g, ''))).size;
+  const bytes      = new TextEncoder().encode(text).length;
+
+  const avgWord = words.length ? (words.reduce((s, w) => s + w.replace(/[^a-zA-Z]/g,'').length, 0) / words.length).toFixed(1) : 0;
+  const avgSent = sentences && words.length ? (words.length / sentences).toFixed(1) : 0;
+
+  const readSec = Math.ceil((words.length / 200) * 60);
+  const readFmt = readSec < 60 ? readSec + 's' : Math.ceil(readSec / 60) + 'm';
+
+  set('sChars',      fmt(chars));
+  set('sNoSpace',    fmt(noSpace));
+  set('sWords',      fmt(words.length));
+  set('sLines',      fmt(lines));
+  set('sSents',      fmt(sentences));
+  set('sParagraphs', fmt(paragraphs));
+  set('sUniq',       fmt(uniqueW));
+  set('sBytes',      fmt(bytes));
+  set('rTime',       readFmt);
+  set('sAvgWord',    avgWord);
+  set('sAvgSent',    avgSent);
+
+  if (noSpace > 0) {
+    const freq = {};
+    for (const ch of text) {
+      if (ch.trim()) freq[ch] = (freq[ch] || 0) + 1;
+    }
+    const sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0, 20);
+    const max = sorted[0]?.[1] || 1;
+    document.getElementById('freqGrid').innerHTML = sorted.map(([ch, cnt]) => {
+      const pct = Math.round((cnt / max) * 100);
+      const display = ch === '<' ? '&lt;' : ch === '>' ? '&gt;' : ch === '&' ? '&amp;' : ch;
+      return `<div class="freq-item">
+        <div class="freq-char">${display}</div>
+        <div class="freq-count">${cnt}</div>
+        <div class="freq-bar-wrap"><div class="freq-bar" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+    document.getElementById('freqCard').style.display = 'block';
+  } else {
+    document.getElementById('freqCard').style.display = 'none';
+  }
+}
+
+function set(id, val) { document.getElementById(id).textContent = val; }
+function fmt(n) { return n.toLocaleString(); }
+
+document.getElementById('textInput').addEventListener('input', e => analyse(e.target.value));
+</script>
+</body>
+</html>

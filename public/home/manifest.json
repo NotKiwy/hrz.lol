@@ -1,0 +1,16 @@
+{
+  "name": "hrz.lol – developer tools",
+  "short_name": "hrz.lol",
+  "description": "A free collection of useful developer tools. No accounts, no noise.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#faf8f3",
+  "theme_color": "#f0c040",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

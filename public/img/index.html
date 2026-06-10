@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Placeholder Image Generator – hrz.lol</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font); min-height: 100vh;
+  display: flex; align-items: center; justify-content: center; padding: 20px; }
+.card { background: var(--white); border: 2.5px solid var(--ink); border-radius: 24px;
+  box-shadow: 5px 6px 0 var(--ink); padding: 36px; width: 100%; max-width: 520px; }
+h1 { font-size: 28px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 6px; }
+.subtitle { color: var(--muted); font-size: 13px; font-weight: 600; margin-bottom: 24px; }
+.row { display: flex; gap: 10px; margin-bottom: 14px; }
+.field { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+input[type=number], input[type=text] {
+  padding: 10px 14px; border: 2.5px solid var(--ink); border-radius: 12px;
+  font-family: var(--font); font-size: 15px; font-weight: 700; background: var(--bg);
+  outline: none; width: 100%; transition: box-shadow .15s;
+}
+input:focus { box-shadow: 3px 3px 0 var(--ink); }
+.color-row { display: flex; gap: 10px; align-items: flex-end; }
+.color-preview {
+  width: 48px; height: 48px; border: 2.5px solid var(--ink); border-radius: 12px;
+  flex-shrink: 0; cursor: pointer; transition: transform .1s;
+}
+.color-preview:hover { transform: scale(1.05); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+.preset {
+  width: 28px; height: 28px; border-radius: 8px; cursor: pointer; border: 2px solid transparent;
+  transition: transform .1s, border-color .1s;
+}
+.preset:hover { transform: scale(1.15); border-color: var(--ink); }
+.url-box {
+  background: var(--surface); border: 2px solid var(--ink); border-radius: 12px;
+  padding: 10px 14px; font-family: monospace; font-size: 13px; font-weight: 700;
+  margin-bottom: 14px; word-break: break-all; cursor: pointer; transition: background .1s;
+}
+.url-box:hover { background: var(--accent); }
+.btn { display: block; width: 100%; padding: 13px; background: var(--accent);
+  border: 2.5px solid var(--ink); border-radius: 14px; font-family: var(--font);
+  font-size: 15px; font-weight: 900; cursor: pointer; box-shadow: 3px 3px 0 var(--ink);
+  transition: transform .15s, box-shadow .15s; }
+.btn:hover { transform: translateY(-2px); box-shadow: 4px 5px 0 var(--ink); }
+.preview-img {
+  width: 100%; border: 2.5px solid var(--ink); border-radius: 14px; margin-bottom: 14px;
+  display: none; box-shadow: 3px 4px 0 var(--ink);
+}
+.tip { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 16px; }
+.tip code { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+</style>
+<meta property="og:image" content="https://hrz.lol/og/img.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/img.png">
+</head>
+<body>
+<div class="card">
+  <h1>placeholder images</h1>
+  <div class="subtitle">generate placeholder images for mockups and layouts</div>
+
+  <p class="tip">direct url: <code>/img/800x600</code> &nbsp; with color: <code>/img/800x600/ff6600</code> &nbsp; with text: <code>/img/800x600/ff6600/hello</code></p>
+
+  <div class="row">
+    <div class="field">
+      <label>width (px)</label>
+      <input type="number" id="w" value="800" min="1" max="4096">
+    </div>
+    <div class="field">
+      <label>height (px)</label>
+      <input type="number" id="h" value="600" min="1" max="4096">
+    </div>
+  </div>
+
+  <div class="field" style="margin-bottom:14px">
+    <label>custom text (optional)</label>
+    <input type="text" id="label" placeholder="leave blank for dimensions">
+  </div>
+
+  <div class="field" style="margin-bottom:10px">
+    <label>background color</label>
+    <div class="color-row">
+      <input type="text" id="colorHex" value="cccccc" maxlength="6" style="font-family:monospace">
+      <div class="color-preview" id="colorPreview" onclick="document.getElementById('colorPicker').click()"></div>
+      <input type="color" id="colorPicker" style="display:none" value="#cccccc">
+    </div>
+  </div>
+
+  <div class="presets" id="presets"></div>
+
+  <img class="preview-img" id="previewImg" alt="preview">
+  <div class="url-box" id="urlBox" title="click to copy">/img/800x600/cccccc</div>
+  <button class="btn" id="genBtn">generate & copy url</button>
+</div>
+<script>
+const PRESETS = ['cccccc','f3f0e8','111111','f0c040','e74c3c','3498db','2ecc71','9b59b6','ff6b6b','4ecdc4','ffeaa7','a29bfe'];
+const presetsEl = document.getElementById('presets');
+PRESETS.forEach(c => {
+  const d = document.createElement('div');
+  d.className = 'preset';
+  d.style.background = '#' + c;
+  if (c === 'cccccc' || c === 'f3f0e8') d.style.border = '2px solid #ccc';
+  d.onclick = () => {
+    document.getElementById('colorHex').value = c;
+    document.getElementById('colorPicker').value = '#' + c;
+    document.getElementById('colorPreview').style.background = '#' + c;
+    update();
+  };
+  presetsEl.appendChild(d);
+});
+
+function hex() { return document.getElementById('colorHex').value.replace(/[^0-9a-fA-F]/g,'').slice(0,6).padStart(6,'0'); }
+function update() {
+  document.getElementById('colorPreview').style.background = '#' + hex();
+  const w = document.getElementById('w').value || 800;
+  const h = document.getElementById('h').value || 600;
+  const lbl = document.getElementById('label').value.trim();
+  let url = `/img/${w}x${h}/${hex()}`;
+  if (lbl) url += '/' + encodeURIComponent(lbl);
+  document.getElementById('urlBox').textContent = url;
+  return url;
+}
+
+document.getElementById('colorHex').addEventListener('input', () => {
+  const v = '#' + hex();
+  document.getElementById('colorPicker').value = v;
+  update();
+});
+document.getElementById('colorPicker').addEventListener('input', e => {
+  document.getElementById('colorHex').value = e.target.value.slice(1);
+  update();
+});
+['w','h','label'].forEach(id => document.getElementById(id).addEventListener('input', update));
+
+document.getElementById('genBtn').onclick = () => {
+  const url = update();
+  const full = location.origin + url;
+  navigator.clipboard.writeText(full);
+  document.getElementById('genBtn').textContent = 'copied!';
+  setTimeout(() => document.getElementById('genBtn').textContent = 'generate & copy url', 2000);
+  const img = document.getElementById('previewImg');
+  img.src = url;
+  img.style.display = 'block';
+};
+
+document.getElementById('urlBox').onclick = () => {
+  navigator.clipboard.writeText(location.origin + document.getElementById('urlBox').textContent);
+  document.getElementById('urlBox').style.background = 'var(--accent)';
+  setTimeout(() => document.getElementById('urlBox').style.background = '', 500);
+};
+
+update();
+</script>
+</body>
+</html>

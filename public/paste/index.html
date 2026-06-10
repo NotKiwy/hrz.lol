@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Code Hosting &amp; Pastebin – hrz.lol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+a { -webkit-tap-highlight-color: transparent; }
+a:focus { outline: none; }
+a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+:root {
+  --bg:      #faf8f3;
+  --white:   #ffffff;
+  --ink:     #111111;
+  --muted:   #777770;
+  --subtle:  #c4c2ba;
+  --surface: #f3f0e8;
+  --accent:  #f0c040;
+  --radius:  18px;
+  --border:  2.5px solid #111111;
+  --font:    'Nunito', sans-serif;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px 48px;
+}
+
+header {
+  width: 100%; max-width: 680px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 0 28px;
+  animation: fadeUp .4s ease both;
+}
+.logo { font-size: 22px; font-weight: 900; letter-spacing: -0.04em; text-decoration: none; color: var(--ink); }
+.logo span { color: var(--muted); }
+.pill-tag {
+  font-size: 11px; font-weight: 800; color: var(--muted);
+  padding: 4px 12px; border: 2px solid var(--subtle); border-radius: 999px;
+}
+
+.card {
+  width: 100%; max-width: 680px;
+  background: var(--white);
+  border: var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 4px 6px 0 #111;
+  animation: fadeUp .4s .06s ease both;
+}
+.card-body { padding: 28px 28px 24px; }
+.card-title { font-size: 26px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 4px; }
+.card-sub   { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 22px; }
+
+.error-bar {
+  display: none; align-items: center; gap: 10px;
+  padding: 10px 14px; background: #fff0f0;
+  border: 2px solid #e87070; border-radius: 12px;
+  font-size: 13px; font-weight: 700; color: #c03030; margin-bottom: 18px;
+}
+.error-bar.show { display: flex; }
+.err-x {
+  width: 20px; height: 20px; background: #e87070; color: #fff;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 900; flex-shrink: 0; cursor: pointer;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.field-row { display: flex; gap: 14px; }
+.field-row .field { flex: 1; }
+label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+
+input[type=text], select {
+  padding: 10px 14px;
+  border: 2px solid var(--subtle);
+  border-radius: 12px;
+  font-family: var(--font); font-size: 14px; font-weight: 700;
+  background: var(--bg); color: var(--ink);
+  outline: none; transition: border-color .15s, box-shadow .15s;
+  appearance: none;
+}
+input[type=text]:focus, select:focus {
+  border-color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+select { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23777' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px; }
+
+.editor-label { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); display: block; margin-bottom: 6px; }
+.editor-wrap {
+  border: 2px solid var(--subtle); border-radius: 14px; overflow: hidden;
+  transition: border-color .15s, box-shadow .15s;
+}
+.editor-wrap:focus-within { border-color: var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+.editor-inner { display: flex; min-height: 280px; max-height: 520px; }
+.line-nums {
+  padding: 12px 10px 12px 14px; background: var(--surface);
+  border-right: 2px solid #e0ddd4;
+  font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6;
+  color: var(--subtle); text-align: right; user-select: none;
+  white-space: pre; overflow: hidden; min-width: 38px;
+}
+textarea {
+  flex: 1; padding: 12px 14px; border: none; outline: none; resize: none;
+  font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6;
+  background: var(--white); color: var(--ink);
+  tab-size: 2;
+}
+textarea::placeholder { color: var(--subtle); }
+.editor-footer {
+  display: flex; gap: 16px; padding: 8px 14px;
+  background: var(--surface); border-top: 2px solid #e0ddd4;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+}
+
+.card-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 28px 18px;
+  border-top: 2px solid #eeebe2;
+}
+.footer-hint { font-size: 12px; font-weight: 600; color: var(--subtle); }
+
+.btn-submit {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 24px;
+  background: var(--accent); color: var(--ink);
+  border: 2.5px solid var(--ink); border-radius: 14px;
+  font-family: var(--font); font-size: 14px; font-weight: 900;
+  cursor: pointer; box-shadow: 3px 4px 0 var(--ink);
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s;
+}
+.btn-submit:hover  { transform: translateY(-3px); box-shadow: 4px 7px 0 var(--ink); }
+.btn-submit:active { transform: scale(.97); box-shadow: 1px 2px 0 var(--ink); }
+.btn-submit:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: 3px 4px 0 var(--ink); }
+
+.spinner {
+  display: inline-block; width: 13px; height: 13px;
+  border: 2.5px solid rgba(0,0,0,.2); border-top-color: var(--ink);
+  border-radius: 50%; animation: spin .6s linear infinite;
+}
+
+@keyframes spin   { to { transform: rotate(360deg); } }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@media (max-width: 600px) {
+  .page { padding: 0 14px 36px; }
+  header { padding: 18px 0 20px; }
+  .pill-tag { display: none; }
+  .card-body { padding: 20px 18px 16px; }
+  .card-title { font-size: 22px; }
+  .field-row { flex-direction: column; gap: 10px; }
+  .editor-inner { min-height: 200px; max-height: 340px; }
+  .card-footer { padding: 12px 18px 16px; flex-wrap: wrap; gap: 10px; }
+  .btn-submit { width: 100%; justify-content: center; }
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/paste.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/paste.png">
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+    <div class="pill-tag">ctrl + enter to submit</div>
+  </header>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="card-title">new paste</div>
+      <div class="card-sub">share code and text – no account needed</div>
+
+      <div id="errorBar" class="error-bar">
+        <div class="err-x">x</div>
+        <span id="errorMsg"></span>
+      </div>
+
+      <div class="field">
+        <label for="title">title</label>
+        <input type="text" id="title" placeholder="untitled paste" maxlength="120">
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="language">language</label>
+          <select id="language">
+            <option value="plaintext">plain text</option>
+            <option value="javascript">javascript</option>
+            <option value="typescript">typescript</option>
+            <option value="jsx">jsx</option>
+            <option value="tsx">tsx</option>
+            <option value="python">python</option>
+            <option value="html">html</option>
+            <option value="css">css</option>
+            <option value="json">json</option>
+            <option value="bash">bash / shell</option>
+            <option value="sql">sql</option>
+            <option value="go">go</option>
+            <option value="rust">rust</option>
+            <option value="java">java</option>
+            <option value="cpp">c++</option>
+            <option value="c">c</option>
+            <option value="csharp">c#</option>
+            <option value="php">php</option>
+            <option value="ruby">ruby</option>
+            <option value="swift">swift</option>
+            <option value="kotlin">kotlin</option>
+            <option value="markdown">markdown</option>
+            <option value="yaml">yaml</option>
+            <option value="toml">toml</option>
+            <option value="dockerfile">dockerfile</option>
+            <option value="nginx">nginx</option>
+            <option value="xml">xml</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="expires">expires</label>
+          <select id="expires">
+            <option value="never">never</option>
+            <option value="1h">1 hour</option>
+            <option value="1d">1 day</option>
+            <option value="1w">1 week</option>
+            <option value="1m">1 month</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="editor-label">content</label>
+      <div class="editor-wrap">
+        <div class="editor-inner">
+          <div class="line-nums" id="lineNums">1</div>
+          <textarea id="content" placeholder="paste code or text here..." spellcheck="false" autocorrect="off" autocapitalize="off"></textarea>
+        </div>
+        <div class="editor-footer">
+          <span id="statLines">1 line</span>
+          <span id="statChars">0 chars</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <div class="footer-hint">max 500 kb</div>
+      <button class="btn-submit" id="submitBtn" onclick="submit()">
+        <span id="btnContent">create paste</span>
+        <span id="btnArrow">&#8594;</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ta        = document.getElementById('content');
+const lineNums  = document.getElementById('lineNums');
+const statLines = document.getElementById('statLines');
+const statChars = document.getElementById('statChars');
+const errorBar  = document.getElementById('errorBar');
+const errorMsg  = document.getElementById('errorMsg');
+const submitBtn = document.getElementById('submitBtn');
+const btnContent= document.getElementById('btnContent');
+const btnArrow  = document.getElementById('btnArrow');
+
+function updateEditor() {
+  const lines = ta.value.split('\n');
+  lineNums.textContent = Array.from({ length: lines.length }, (_, i) => i + 1).join('\n');
+  lineNums.scrollTop   = ta.scrollTop;
+  statLines.textContent = lines.length + (lines.length === 1 ? ' line' : ' lines');
+  statChars.textContent = ta.value.length.toLocaleString() + ' chars';
+}
+
+ta.addEventListener('input', updateEditor);
+ta.addEventListener('scroll', () => { lineNums.scrollTop = ta.scrollTop; });
+ta.addEventListener('keydown', e => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const s = ta.selectionStart, end = ta.selectionEnd;
+    ta.value = ta.value.slice(0, s) + '  ' + ta.value.slice(end);
+    ta.selectionStart = ta.selectionEnd = s + 2;
+    updateEditor();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') submit();
+});
+
+function showError(msg) {
+  errorMsg.textContent = msg;
+  errorBar.classList.add('show');
+  errorBar.style.animation = 'none';
+  requestAnimationFrame(() => { errorBar.style.animation = 'fadeUp .3s ease both'; });
+}
+
+async function submit() {
+  const content = ta.value.trim();
+  if (!content) { showError('content cannot be empty'); ta.focus(); return; }
+  errorBar.classList.remove('show');
+  submitBtn.disabled = true;
+  btnContent.innerHTML = '<span class="spinner"></span>';
+  btnArrow.style.display = 'none';
+
+  try {
+    const res  = await fetch('/api/paste', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title:    document.getElementById('title').value,
+        content,
+        language: document.getElementById('language').value,
+        expires:  document.getElementById('expires').value,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showError(data.error || 'server error'); return; }
+    window.location.href = '/' + data.id;
+  } catch {
+    showError('network error – try again');
+  } finally {
+    submitBtn.disabled = false;
+    btnContent.textContent = 'create paste';
+    btnArrow.style.display = '';
+  }
+}
+
+updateEditor();
+ta.focus();
+</script>
+</body>
+</html>

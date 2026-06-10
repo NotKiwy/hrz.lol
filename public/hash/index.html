@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hash Generator – MD5, SHA-256, SHA-512 – hrz.lol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent}a:focus{outline:none}a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--radius:18px;--border:2.5px solid #111;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;overflow-x:hidden}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 48px}
+header{width:100%;max-width:680px;display:flex;align-items:center;justify-content:space-between;padding:24px 0 28px;animation:fadeUp .4s ease both}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--muted)}
+.nav-link{font-size:12px;font-weight:800;color:var(--muted);text-decoration:none;padding:4px 12px;border:2px solid var(--subtle);border-radius:999px;transition:border-color .15s,color .15s}
+.nav-link:hover{border-color:var(--ink);color:var(--ink)}
+
+.card{width:100%;max-width:680px;background:var(--white);border:var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:4px 6px 0 #111;animation:fadeUp .4s .06s ease both}
+.card-body{padding:28px 28px 24px}
+.card-title{font-size:26px;font-weight:900;letter-spacing:-0.04em;margin-bottom:4px}
+.card-sub{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:22px}
+
+.input-tabs{display:flex;gap:6px;margin-bottom:14px}
+.itab{padding:5px 14px;border:2px solid var(--subtle);border-radius:999px;font-family:var(--font);font-size:12px;font-weight:800;cursor:pointer;background:var(--bg);color:var(--muted);transition:all .15s}
+.itab.active{background:var(--ink);border-color:var(--ink);color:#fff}
+
+textarea{width:100%;min-height:120px;padding:12px 14px;border:2px solid var(--subtle);border-radius:14px;font-family:var(--mono);font-size:13px;line-height:1.6;background:var(--bg);color:var(--ink);outline:none;resize:vertical;transition:border-color .15s,box-shadow .15s}
+textarea:focus{border-color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+textarea::placeholder{color:var(--subtle)}
+
+.file-drop{border:2.5px dashed var(--subtle);border-radius:14px;padding:28px;text-align:center;cursor:pointer;position:relative;background:var(--bg);transition:border-color .2s,background .2s;display:none}
+.file-drop.active{display:block}
+.file-drop:hover,.file-drop.drag{border-color:var(--ink);background:#f5f2e8}
+.file-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.file-drop-text{font-size:14px;font-weight:800;color:var(--muted)}
+.file-info{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border:2px solid var(--ink);border-radius:12px;margin-top:12px;font-size:13px;font-weight:700}
+.file-info.show{display:flex}
+
+.algos{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.algo-btn{padding:6px 16px;border:2px solid var(--subtle);border-radius:999px;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;background:var(--bg);color:var(--muted);transition:all .15s;text-transform:uppercase}
+.algo-btn:hover{border-color:var(--ink);color:var(--ink)}
+.algo-btn.active{background:var(--ink);border-color:var(--ink);color:#fff}
+
+.results{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.hash-row{background:var(--surface);border:2px solid #e0ddd4;border-radius:12px;overflow:hidden;animation:fadeUp .2s ease both}
+.hash-row-head{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--white);border-bottom:1.5px solid #eeebe2}
+.hash-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted)}
+.hash-copy{padding:3px 10px;border:1.5px solid var(--subtle);border-radius:6px;font-family:var(--font);font-size:10px;font-weight:800;cursor:pointer;background:transparent;color:var(--muted);transition:all .1s}
+.hash-copy:hover{border-color:var(--ink);color:var(--ink)}
+.hash-copy.ok{border-color:#4caf50;color:#2e7d32}
+.hash-val{padding:10px 14px;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink);word-break:break-all;line-height:1.5}
+
+.card-footer{display:flex;align-items:center;justify-content:space-between;padding:14px 28px 18px;border-top:2px solid #eeebe2;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--accent);color:var(--ink);border:2.5px solid var(--ink);border-radius:14px;font-family:var(--font);font-size:14px;font-weight:900;cursor:pointer;box-shadow:3px 4px 0 var(--ink);transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s}
+.btn:hover{transform:translateY(-3px);box-shadow:4px 7px 0 var(--ink)}
+.btn:active{transform:scale(.97);box-shadow:1px 2px 0 var(--ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:3px 4px 0 var(--ink)}
+.footer-hint{font-size:12px;font-weight:600;color:var(--subtle)}
+
+.spinner{display:inline-block;width:13px;height:13px;border:2.5px solid rgba(0,0,0,.2);border-top-color:var(--ink);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+@media(max-width:600px){
+  .page{padding:0 14px 36px}
+  header{padding:18px 0 20px}
+  .card-body{padding:20px 18px 16px}
+  .card-footer{padding:12px 18px 16px}
+  .btn{width:100%;justify-content:center}
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/hash.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/hash.png">
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+    <a class="nav-link" href="//hrz.lol">all tools</a>
+  </header>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="card-title">hash</div>
+      <div class="card-sub">md5 · sha-1 · sha-256 · sha-384 · sha-512</div>
+
+      <div class="input-tabs">
+        <button class="itab active" onclick="setMode('text')">text</button>
+        <button class="itab" onclick="setMode('file')">file</button>
+      </div>
+
+      <textarea id="textInput" placeholder="enter text to hash..."></textarea>
+
+      <div class="file-drop" id="fileDrop">
+        <input type="file" id="fileInput">
+        <div class="file-drop-text">drop a file or click to browse</div>
+      </div>
+      <div class="file-info" id="fileInfo">
+        <span id="fileName"></span>
+        <span style="color:var(--muted);font-size:12px" id="fileSize"></span>
+        <button style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--subtle);font-size:18px" onclick="clearFile()">×</button>
+      </div>
+
+      <div class="algos" id="algos">
+        <button class="algo-btn active" data-algo="md5">MD5</button>
+        <button class="algo-btn active" data-algo="sha1">SHA-1</button>
+        <button class="algo-btn active" data-algo="sha256">SHA-256</button>
+        <button class="algo-btn active" data-algo="sha384">SHA-384</button>
+        <button class="algo-btn active" data-algo="sha512">SHA-512</button>
+      </div>
+
+      <div class="results" id="results"></div>
+    </div>
+    <div class="card-footer">
+      <div class="footer-hint" id="hint">select algorithms above</div>
+      <button class="btn" id="hashBtn" onclick="doHash()">
+        <span id="btnText">hash</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+let mode = 'text';
+let fileData = null;
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('textInput').style.display = m === 'text' ? '' : 'none';
+  document.getElementById('fileDrop').style.display  = m === 'file' ? 'block' : 'none';
+  document.querySelectorAll('.itab').forEach((t,i) => t.classList.toggle('active', (i===0) === (m==='text')));
+  fileData = null;
+  document.getElementById('fileInfo').classList.remove('show');
+  document.getElementById('results').innerHTML = '';
+}
+
+document.querySelectorAll('.algo-btn').forEach(b => {
+  b.addEventListener('click', () => b.classList.toggle('active'));
+});
+
+const fileDrop = document.getElementById('fileDrop');
+const fileInput = document.getElementById('fileInput');
+
+fileDrop.addEventListener('dragover', e => { e.preventDefault(); fileDrop.classList.add('drag'); });
+fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('drag'));
+fileDrop.addEventListener('drop', e => {
+  e.preventDefault(); fileDrop.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) loadFile(f);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) loadFile(fileInput.files[0]); });
+
+function loadFile(f) {
+  if (f.size > 3_000_000) {
+    document.getElementById('hint').textContent = 'file too large (max 3 MB)';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const arr = new Uint8Array(e.target.result);
+    let b64 = '';
+    const chunk = 8192;
+    for (let i = 0; i < arr.length; i += chunk) {
+      b64 += String.fromCharCode(...arr.subarray(i, i + chunk));
+    }
+    fileData = { name: f.name, size: f.size, b64: btoa(b64) };
+    document.getElementById('fileName').textContent = f.name;
+    document.getElementById('fileSize').textContent = fmtSize(f.size);
+    document.getElementById('fileInfo').classList.add('show');
+  };
+  reader.readAsArrayBuffer(f);
+}
+
+function clearFile() {
+  fileData = null;
+  fileInput.value = '';
+  document.getElementById('fileInfo').classList.remove('show');
+  document.getElementById('results').innerHTML = '';
+}
+
+function fmtSize(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(2) + ' MB';
+}
+
+async function doHash() {
+  const algos = [...document.querySelectorAll('.algo-btn.active')].map(b => b.dataset.algo);
+  if (!algos.length) { document.getElementById('hint').textContent = 'select at least one algorithm'; return; }
+
+  if (mode === 'file' && !fileData) {
+    document.getElementById('hint').textContent = 'select a file first';
+    return;
+  }
+
+  const btn  = document.getElementById('hashBtn');
+  const txt  = document.getElementById('btnText');
+  btn.disabled = true;
+  txt.innerHTML = '<span class="spinner"></span>';
+
+  const payload = { algo: algos.length === 1 ? algos[0] : undefined };
+  if (mode === 'file') {
+    payload.data = fileData.b64;
+  } else {
+    payload.text = document.getElementById('textInput').value;
+  }
+
+  try {
+    const res  = await fetch('/api/hash', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) { document.getElementById('hint').textContent = data.error; return; }
+
+    const out = document.getElementById('results');
+    out.innerHTML = '';
+    algos.forEach(a => {
+      if (data[a]) {
+        const row = document.createElement('div');
+        row.className = 'hash-row';
+        row.innerHTML = `<div class="hash-row-head">
+          <span class="hash-label">${a.replace('sha','sha-').toUpperCase()}</span>
+          <button class="hash-copy" onclick="copyHash(this,'${data[a]}')">copy</button>
+        </div>
+        <div class="hash-val">${data[a]}</div>`;
+        out.appendChild(row);
+      }
+    });
+    document.getElementById('hint').textContent = `${algos.length} hash${algos.length > 1 ? 'es' : ''} computed`;
+  } catch {
+    document.getElementById('hint').textContent = 'network error';
+  } finally {
+    btn.disabled = false;
+    txt.textContent = 'hash';
+  }
+}
+
+function copyHash(btn, val) {
+  navigator.clipboard.writeText(val);
+  btn.textContent = 'copied!';
+  btn.classList.add('ok');
+  setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('ok'); }, 2000);
+}
+
+document.getElementById('textInput').addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') doHash();
+});
+</script>
+</body>
+</html>

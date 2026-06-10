@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unix Timestamp Converter – hrz.lol</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent}a:focus{outline:none}a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);padding:0 20px 60px;min-height:100vh}
+.page{max-width:700px;margin:0 auto}
+header{display:flex;align-items:center;padding:24px 0 32px}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--muted)}
+h1{font-size:28px;font-weight:900;letter-spacing:-0.04em;margin-bottom:6px}
+.sub{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:28px}
+
+.now-card{background:var(--ink);border-radius:18px;padding:24px 28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.now-label{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:0.07em;color:#777}
+.now-ts{font-family:var(--mono);font-size:32px;font-weight:700;color:var(--accent);letter-spacing:0.02em}
+.now-date{font-size:13px;font-weight:600;color:#aaa;margin-top:4px}
+.copy-now{padding:8px 16px;background:var(--accent);border:none;border-radius:10px;font-family:var(--font);font-size:12px;font-weight:900;cursor:pointer;transition:transform .1s;flex-shrink:0}
+.copy-now:hover{transform:scale(1.05)}
+
+.card{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;padding:24px 28px;box-shadow:3px 4px 0 var(--ink);margin-bottom:20px}
+.card-title{font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:16px}
+.input-row{display:flex;gap:10px;margin-bottom:12px}
+.mono-input{flex:1;padding:10px 14px;border:2.5px solid var(--subtle);border-radius:12px;font-family:var(--mono);font-size:15px;font-weight:600;background:var(--bg);color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s}
+.mono-input:focus{border-color:var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.convert-btn{padding:10px 18px;background:var(--accent);border:2.5px solid var(--ink);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:900;cursor:pointer;box-shadow:2px 3px 0 var(--ink);transition:transform .1s}
+.convert-btn:hover{transform:translateY(-1px)}
+.result-grid{display:grid;gap:8px}
+.result-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-radius:10px}
+.result-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);min-width:100px}
+.result-val{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--ink);flex:1;margin:0 12px}
+.copy-val{padding:3px 10px;border:1.5px solid var(--subtle);border-radius:6px;font-family:var(--font);font-size:10px;font-weight:800;cursor:pointer;background:transparent;color:var(--muted);transition:border-color .1s,color .1s}
+.copy-val:hover{border-color:var(--ink);color:var(--ink)}
+.err{color:#c0392b;font-size:12px;font-weight:700;margin-top:6px;min-height:16px}
+
+.ago-card{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;padding:24px 28px;box-shadow:3px 4px 0 var(--ink);margin-bottom:20px}
+.ago-result{font-size:22px;font-weight:900;letter-spacing:-0.03em;margin-top:12px;min-height:32px}
+
+.tz-card{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:3px 4px 0 var(--ink)}
+.tz-table{width:100%;border-collapse:collapse}
+.tz-table th{padding:10px 16px;background:var(--surface);border-bottom:2px solid var(--ink);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);text-align:left}
+.tz-table td{padding:10px 16px;border-bottom:1px solid var(--surface);font-size:13px;font-weight:600}
+.tz-table td:first-child{font-weight:800;min-width:120px}
+.tz-table td:last-child{font-family:var(--mono);font-size:12px}
+.tz-table tr:last-child td{border-bottom:none}
+.tz-table tr.now-row td{background:#fffde7}
+
+@media(max-width:600px){
+  body{padding:0 14px 40px}
+  header{padding:18px 0 20px}
+  h1{font-size:24px}
+  .now-card{flex-wrap:wrap;gap:10px;padding:18px 20px}
+  .now-ts{font-size:24px}
+  .card{padding:18px 20px}
+  .input-row{flex-wrap:wrap}
+  .mono-input{min-width:0}
+  .convert-btn{width:100%}
+  .result-row{flex-wrap:wrap;gap:4px}
+  .result-label{min-width:0;width:100%}
+  .result-val{margin:0}
+  .tz-card{overflow-x:auto}
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/ts.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/ts.png">
+</head>
+<body>
+<div class="page">
+  <header><a class="logo" href="//hrz.lol">hrz<span>.lol</span></a></header>
+  <h1>timestamp</h1>
+  <div class="sub">unix timestamp / date, timezones, time ago</div>
+
+  <div class="now-card">
+    <div>
+      <div class="now-label">now</div>
+      <div class="now-ts" id="nowTs">0</div>
+      <div class="now-date" id="nowDate"></div>
+    </div>
+    <button class="copy-now" id="copyNow">copy</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">timestamp → date</div>
+    <div class="input-row">
+      <input class="mono-input" id="tsInput" placeholder="1700000000" type="number">
+      <button class="convert-btn" onclick="tsToDate()">convert</button>
+    </div>
+    <div class="err" id="tsErr"></div>
+    <div class="result-grid" id="tsResult"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">date → timestamp</div>
+    <div class="input-row">
+      <input class="mono-input" id="dateInput" placeholder="2024-01-15 14:30:00" type="text">
+      <button class="convert-btn" onclick="dateToTs()">convert</button>
+    </div>
+    <div class="err" id="dateErr"></div>
+    <div class="result-grid" id="dateResult"></div>
+  </div>
+
+  <div class="ago-card">
+    <div class="card-title">time ago</div>
+    <div class="input-row">
+      <input class="mono-input" id="agoInput" placeholder="timestamp or date" type="text">
+      <button class="convert-btn" onclick="calcAgo()">calculate</button>
+    </div>
+    <div class="ago-result" id="agoResult"></div>
+  </div>
+
+  <div class="tz-card">
+    <table class="tz-table">
+      <thead><tr><th>timezone</th><th>current time</th><th>utc offset</th></tr></thead>
+      <tbody id="tzBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const TZS = [
+  {name:'UTC',       tz:'UTC'},
+  {name:'New York',  tz:'America/New_York'},
+  {name:'Los Angeles',tz:'America/Los_Angeles'},
+  {name:'London',    tz:'Europe/London'},
+  {name:'Berlin',    tz:'Europe/Berlin'},
+  {name:'Moscow',    tz:'Europe/Moscow'},
+  {name:'Dubai',     tz:'Asia/Dubai'},
+  {name:'India',     tz:'Asia/Kolkata'},
+  {name:'Tokyo',     tz:'Asia/Tokyo'},
+  {name:'Sydney',    tz:'Australia/Sydney'},
+];
+
+function pad(n){return String(n).padStart(2,'0')}
+function fmtDate(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`}
+
+function copyText(t,btn){
+  navigator.clipboard.writeText(t);
+  const orig=btn.textContent; btn.textContent='✓';
+  setTimeout(()=>btn.textContent=orig,1500);
+}
+
+function resultRow(label,val){
+  return `<div class="result-row">
+    <div class="result-label">${label}</div>
+    <div class="result-val">${val}</div>
+    <button class="copy-val" onclick="copyText('${val.replace(/'/g,"\\'")}',this)">copy</button>
+  </div>`;
+}
+
+function tsToDate(){
+  const v=document.getElementById('tsInput').value.trim();
+  const err=document.getElementById('tsErr');
+  const res=document.getElementById('tsResult');
+  if(!v){err.textContent='enter a timestamp';res.innerHTML='';return}
+  const n=parseInt(v);
+  if(isNaN(n)){err.textContent='invalid number';res.innerHTML='';return}
+  err.textContent='';
+  const ms = v.length >= 13 ? n : n * 1000;
+  const d=new Date(ms);
+  if(isNaN(d)){err.textContent='invalid timestamp';res.innerHTML='';return}
+  res.innerHTML=[
+    resultRow('local',    d.toLocaleString()),
+    resultRow('utc',      d.toUTCString()),
+    resultRow('iso 8601', d.toISOString()),
+    resultRow('ms',       String(ms)),
+  ].join('');
+}
+
+function dateToTs(){
+  const v=document.getElementById('dateInput').value.trim();
+  const err=document.getElementById('dateErr');
+  const res=document.getElementById('dateResult');
+  if(!v){err.textContent='enter a date';res.innerHTML='';return}
+  const d=new Date(v);
+  if(isNaN(d)){err.textContent='could not parse date';res.innerHTML='';return}
+  err.textContent='';
+  res.innerHTML=[
+    resultRow('unix (s)',  String(Math.floor(d.getTime()/1000))),
+    resultRow('unix (ms)', String(d.getTime())),
+    resultRow('iso 8601',  d.toISOString()),
+    resultRow('utc',       d.toUTCString()),
+  ].join('');
+}
+
+function calcAgo(){
+  const v=document.getElementById('agoInput').value.trim();
+  const el=document.getElementById('agoResult');
+  if(!v){el.textContent='';return}
+  let d;
+  const n=parseInt(v);
+  if(!isNaN(n)&&String(n)===v) d=new Date(v.length>=13?n:n*1000);
+  else d=new Date(v);
+  if(isNaN(d)){el.textContent='could not parse';return}
+  const diff=Date.now()-d.getTime();
+  const abs=Math.abs(diff);
+  const future=diff<0;
+  const s=Math.floor(abs/1000),m=Math.floor(s/60),h=Math.floor(m/60),days=Math.floor(h/24),w=Math.floor(days/7),mo=Math.floor(days/30),y=Math.floor(days/365);
+  const rel=y?`${y} year${y>1?'s':''}`:mo?`${mo} month${mo>1?'s':''}`:w?`${w} week${w>1?'s':''}`:days?`${days} day${days>1?'s':''}`:h?`${h} hour${h>1?'s':''}`:m?`${m} minute${m>1?'s':''}`:s?`${s} second${s>1?'s':''}`:' just now';
+  el.textContent = rel === ' just now' ? 'just now' : (future ? 'in ' + rel : rel + ' ago');
+}
+
+function updateNow(){
+  const now=Date.now();
+  const ts=Math.floor(now/1000);
+  document.getElementById('nowTs').textContent=ts;
+  document.getElementById('nowDate').textContent=new Date(now).toUTCString();
+}
+
+document.getElementById('copyNow').onclick=function(){
+  copyText(document.getElementById('nowTs').textContent,this);
+};
+
+function updateTz(){
+  const now=new Date();
+  const body=document.getElementById('tzBody');
+  body.innerHTML=TZS.map(({name,tz})=>{
+    const fmt=new Intl.DateTimeFormat('en-US',{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false,year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
+    const offset=new Intl.DateTimeFormat('en',{timeZone:tz,timeZoneName:'shortOffset'}).formatToParts(now).find(p=>p.type==='timeZoneName')?.value||'';
+    const isLocal=Intl.DateTimeFormat().resolvedOptions().timeZone===tz;
+    return `<tr${isLocal?' class="now-row"':''}><td>${name}${isLocal?' (you)':''}</td><td>${fmt}</td><td>${offset}</td></tr>`;
+  }).join('');
+}
+
+updateNow(); updateTz();
+setInterval(()=>{updateNow();updateTz();},1000);
+
+document.getElementById('tsInput').addEventListener('keydown',e=>{if(e.key==='Enter')tsToDate()});
+document.getElementById('dateInput').addEventListener('keydown',e=>{if(e.key==='Enter')dateToTs()});
+document.getElementById('agoInput').addEventListener('keydown',e=>{if(e.key==='Enter')calcAgo()});
+</script>
+</body>
+</html>

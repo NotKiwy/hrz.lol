@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>server busy – hrz.lol</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--accent:#f0c040;--font:'Nunito',sans-serif}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);display:flex;align-items:center;justify-content:center;padding:20px}
+.box{background:var(--white);border:2.5px solid var(--ink);border-radius:20px;padding:52px 48px;box-shadow:5px 7px 0 var(--ink);text-align:center;max-width:420px;width:100%}
+.icon{font-size:48px;line-height:1;margin-bottom:20px;opacity:.15}
+h1{font-size:26px;font-weight:900;letter-spacing:-0.04em;margin-bottom:10px}
+p{font-size:14px;font-weight:600;color:var(--muted);line-height:1.6;margin-bottom:28px}
+.tag{display:inline-block;background:var(--accent);border:2px solid var(--ink);border-radius:999px;padding:4px 14px;font-size:11px;font-weight:900;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:20px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 24px;border:2px solid var(--ink);border-radius:999px;font-family:var(--font);font-size:13px;font-weight:800;cursor:pointer;text-decoration:none;background:var(--accent);color:var(--ink);box-shadow:2px 3px 0 var(--ink);transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px);box-shadow:3px 5px 0 var(--ink)}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="icon">&#9632;</div>
+  <div class="tag">503 – server busy</div>
+  <h1>back in a moment</h1>
+  <p>the server is under heavy load right now.<br>please wait a few seconds and try again.</p>
+  <a class="btn" href="javascript:location.reload()">try again &#8594;</a>
+</div>
+</body>
+</html>

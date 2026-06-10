@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hrz.lol – free developer tools</title>
+<meta name="description" content="A free collection of 15 developer tools: paste, link shortener, image converter, JSON formatter, cron builder, diff viewer, markdown editor, color tool, and more. No accounts, no noise.">
+<meta name="keywords" content="developer tools, pastebin, link shortener, image converter, json formatter, cron builder, diff viewer, markdown editor, color converter, fake data generator, webhook inspector">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hrz.lol/">
+<meta property="og:title" content="hrz.lol – free developer tools">
+<meta property="og:description" content="15 free developer tools in one place. Paste, shorten links, convert images, format JSON, build cron expressions, and more. No accounts required.">
+<meta property="og:site_name" content="hrz.lol">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="hrz.lol – free developer tools">
+<meta name="twitter:description" content="15 free developer tools. No accounts, no noise.">
+<link rel="manifest" href="/manifest.json">
+<link rel="canonical" href="https://hrz.lol/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+a { -webkit-tap-highlight-color: transparent; }
+a:focus { outline: none; }
+a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+:root {
+  --bg:     #faf8f3;
+  --white:  #ffffff;
+  --ink:    #111111;
+  --muted:  #777770;
+  --subtle: #c4c2ba;
+  --surface:#f3f0e8;
+  --accent: #f0c040;
+  --font:   'Nunito', sans-serif;
+}
+
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  overflow-x: hidden;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px 60px;
+  gap: 48px;
+}
+
+.hero { text-align: center; animation: fadeUp .5s ease both; }
+
+.hero-logo {
+  font-size: clamp(52px, 10vw, 88px);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  margin-bottom: 14px;
+}
+.hero-logo span { color: var(--muted); }
+
+.hero-sub {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--muted);
+  max-width: 360px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
+.tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 1000px;
+  animation: fadeUp .5s .1s ease both;
+}
+
+.tool-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 28px 24px;
+  background: var(--white);
+  border: 2.5px solid var(--ink);
+  border-radius: 18px;
+  text-decoration: none;
+  color: var(--ink);
+  box-shadow: 4px 5px 0 var(--ink);
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+}
+.tool-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 5px 9px 0 var(--ink);
+}
+.tool-card:active {
+  transform: scale(.98);
+  box-shadow: 2px 3px 0 var(--ink);
+}
+
+.tool-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: var(--accent);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.tool-name {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.tool-desc {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.tool-arrow {
+  margin-top: auto;
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--subtle);
+  transition: color .15s, transform .15s;
+}
+.tool-card:hover .tool-arrow {
+  color: var(--ink);
+  transform: translateX(4px);
+}
+
+footer {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--subtle);
+  animation: fadeUp .5s .18s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.support-fab {
+  position: fixed; right: 20px; bottom: 20px; z-index: 50;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 18px; border: 2.5px solid var(--ink); border-radius: 999px;
+  background: var(--accent); color: var(--ink); text-decoration: none;
+  font-family: var(--font); font-weight: 900; font-size: 14px;
+  box-shadow: 3px 4px 0 var(--ink);
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s;
+  -webkit-tap-highlight-color: transparent;
+}
+.support-fab:hover { transform: translateY(-2px); box-shadow: 4px 6px 0 var(--ink); }
+.support-fab:active { transform: scale(.97); box-shadow: 1px 2px 0 var(--ink); }
+
+.flash {
+  position: fixed; inset: 0; z-index: 999; pointer-events: none;
+  background: var(--flash-color, #f0c040);
+  -webkit-clip-path: circle(0% at var(--fx, 50%) var(--fy, 50%));
+          clip-path: circle(0% at var(--fx, 50%) var(--fy, 50%));
+  animation: flashCover .45s cubic-bezier(.55,0,.2,1) forwards;
+}
+@keyframes flashCover {
+  to {
+    -webkit-clip-path: circle(160% at var(--fx, 50%) var(--fy, 50%));
+            clip-path: circle(160% at var(--fx, 50%) var(--fy, 50%));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flash { display: none !important; }
+}
+
+@media (max-width: 520px) {
+  .page { padding: 28px 14px 40px; gap: 32px; }
+  .tools { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .tool-card { padding: 18px 16px 14px; gap: 6px; }
+  .tool-name { font-size: 18px; }
+  .tool-desc { font-size: 12px; }
+  .tool-tag  { font-size: 9px; }
+  .support-fab {
+    right: 12px; bottom: calc(12px + env(safe-area-inset-bottom));
+    padding: 9px 14px; font-size: 13px;
+  }
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/home.png">
+<meta name="twitter:image" content="https://hrz.lol/og/home.png">
+</head>
+<body>
+<a class="support-fab" href="/support" aria-label="support hrz.lol">&hearts; support</a>
+<div class="page">
+  <div class="hero">
+    <div class="hero-logo">hrz<span>.lol</span></div>
+    <div class="hero-sub">a small collection of useful tools. no accounts, no noise.</div>
+  </div>
+
+  <div class="tools">
+    <a class="tool-card" href="//paste.hrz.lol">
+      <div class="tool-tag">tool 01</div>
+      <div class="tool-name">paste</div>
+      <div class="tool-desc">share code and text instantly. syntax highlighting for 25+ languages.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//lnk.hrz.lol">
+      <div class="tool-tag">tool 02</div>
+      <div class="tool-name">link shortener</div>
+      <div class="tool-desc">turn any long url into a short one. click stats included.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//conv.hrz.lol">
+      <div class="tool-tag">tool 03</div>
+      <div class="tool-name">converter</div>
+      <div class="tool-desc">convert images to any format. jpg, png, webp, avif, tiff, gif.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//chat.hrz.lol">
+      <div class="tool-tag">tool 04</div>
+      <div class="tool-name">chat</div>
+      <div class="tool-desc">anonymous ephemeral rooms. no accounts. gone when everyone leaves.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//draw.hrz.lol">
+      <div class="tool-tag">tool 05</div>
+      <div class="tool-name">draw</div>
+      <div class="tool-desc">collaborative whiteboard. draw together in real time, share a link.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//hook.hrz.lol">
+      <div class="tool-tag">tool 06</div>
+      <div class="tool-name">webhook inspector</div>
+      <div class="tool-desc">get a temporary url and inspect every request hitting it live.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//img.hrz.lol">
+      <div class="tool-tag">tool 07</div>
+      <div class="tool-name">placeholder images</div>
+      <div class="tool-desc">generate placeholder images by url. /img/800x600/ff6600</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//fake.hrz.lol">
+      <div class="tool-tag">tool 08</div>
+      <div class="tool-name">fake data</div>
+      <div class="tool-desc">generate realistic test data. export as json, csv, or sql.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//json.hrz.lol">
+      <div class="tool-tag">tool 09</div>
+      <div class="tool-name">json</div>
+      <div class="tool-desc">format, validate and explore json. collapse, expand, copy paths.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//cron.hrz.lol">
+      <div class="tool-tag">tool 10</div>
+      <div class="tool-name">cron builder</div>
+      <div class="tool-desc">build cron expressions visually. human description and next run times.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//diff.hrz.lol">
+      <div class="tool-tag">tool 11</div>
+      <div class="tool-name">diff</div>
+      <div class="tool-desc">compare two texts line by line. split and unified view.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//meta.hrz.lol">
+      <div class="tool-tag">tool 12</div>
+      <div class="tool-name">meta preview</div>
+      <div class="tool-desc">see how a url looks in telegram and twitter. og tags inspector.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//ts.hrz.lol">
+      <div class="tool-tag">tool 13</div>
+      <div class="tool-name">timestamp</div>
+      <div class="tool-desc">unix / date converter. timezones, time ago, live ticker.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//md.hrz.lol">
+      <div class="tool-tag">tool 14</div>
+      <div class="tool-name">markdown</div>
+      <div class="tool-desc">editor with live preview. toolbar shortcuts. export to html.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+
+    <a class="tool-card" href="//color.hrz.lol">
+      <div class="tool-tag">tool 15</div>
+      <div class="tool-name">color</div>
+      <div class="tool-desc">hex / rgb / hsl converter. palette generator. wcag contrast checker.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//hash.hrz.lol">
+      <div class="tool-tag">tool 16</div>
+      <div class="tool-name">hash</div>
+      <div class="tool-desc">md5, sha-1, sha-256, sha-384, sha-512. text and file input.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//jwt.hrz.lol">
+      <div class="tool-tag">tool 17</div>
+      <div class="tool-name">jwt decoder</div>
+      <div class="tool-desc">decode and inspect jwt tokens. expiry status, syntax highlighted payload.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//enc.hrz.lol">
+      <div class="tool-tag">tool 18</div>
+      <div class="tool-name">encode / decode</div>
+      <div class="tool-desc">base64, url encoding, html entities, hex. instant live conversion.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//qr.hrz.lol">
+      <div class="tool-tag">tool 19</div>
+      <div class="tool-name">qr code</div>
+      <div class="tool-desc">generate qr codes for any text or url. custom colors and sizes.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//url.hrz.lol">
+      <div class="tool-tag">tool 20</div>
+      <div class="tool-name">url parser</div>
+      <div class="tool-desc">break down any url into components. inspect query params, protocol, path.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//whois.hrz.lol">
+      <div class="tool-tag">tool 21</div>
+      <div class="tool-name">whois</div>
+      <div class="tool-desc">domain registration lookup via rdap. registrar, dates, nameservers.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//chars.hrz.lol">
+      <div class="tool-tag">tool 22</div>
+      <div class="tool-name">char counter</div>
+      <div class="tool-desc">count characters, words, lines, sentences. read time and frequency analysis.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//req.hrz.lol">
+      <div class="tool-tag">tool 23</div>
+      <div class="tool-name">http client</div>
+      <div class="tool-desc">send http requests from the browser. custom headers, body, all methods.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+  </div>
+
+  <footer>hrz.lol &nbsp;&#183;&nbsp; simple tools that just work</footer>
+</div>
+<script>
+function flashTo(color, origin, url) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    location.href = url; return;
+  }
+  const f = document.createElement('div');
+  f.className = 'flash';
+  f.style.setProperty('--flash-color', color);
+  if (origin) {
+    f.style.setProperty('--fx', `${origin.left + origin.width / 2}px`);
+    f.style.setProperty('--fy', `${origin.top  + origin.height / 2}px`);
+  }
+  document.body.appendChild(f);
+  setTimeout(() => { location.href = url; }, 460);
+}
+
+const fab = document.querySelector('.support-fab');
+if (fab) {
+  fab.addEventListener('click', (e) => {
+    e.preventDefault();
+    flashTo('#f0c040', fab.getBoundingClientRect(), '/support');
+  });
+}
+</script>
+</body>
+</html>

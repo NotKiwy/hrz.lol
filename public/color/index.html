@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Color Picker, Converter &amp; Palette – hrz.lol</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent}a:focus{outline:none}a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);padding:0 20px 60px;min-height:100vh}
+.page{max-width:800px;margin:0 auto}
+header{display:flex;align-items:center;padding:24px 0 32px}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--muted)}
+h1{font-size:28px;font-weight:900;letter-spacing:-0.04em;margin-bottom:6px}
+.sub{font-size:14px;font-weight:600;color:var(--muted);margin-bottom:28px}
+
+.color-hero{background:var(--white);border:2.5px solid var(--ink);border-radius:20px;padding:24px;box-shadow:4px 5px 0 var(--ink);margin-bottom:20px;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.color-swatch-big{width:120px;height:120px;border-radius:14px;border:2.5px solid var(--ink);flex-shrink:0;cursor:pointer;transition:transform .1s;position:relative}
+.color-swatch-big:hover{transform:scale(1.03)}
+.color-picker-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.color-inputs{flex:1;display:flex;flex-direction:column;gap:10px}
+.input-row{display:flex;align-items:center;gap:8px}
+.input-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);min-width:40px}
+.color-input{flex:1;padding:8px 12px;border:2px solid var(--subtle);border-radius:10px;font-family:var(--mono);font-size:13px;font-weight:600;background:var(--bg);color:var(--ink);outline:none;transition:border-color .15s}
+.color-input:focus{border-color:var(--ink)}
+.copy-field{padding:6px 12px;border:2px solid var(--subtle);border-radius:8px;font-family:var(--font);font-size:11px;font-weight:800;cursor:pointer;background:transparent;color:var(--muted);transition:border-color .1s,background .1s}
+.copy-field:hover{border-color:var(--ink);background:var(--accent);color:var(--ink)}
+
+.section{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;padding:20px 24px;box-shadow:3px 4px 0 var(--ink);margin-bottom:16px}
+.section-title{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:14px}
+
+.palette-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.ptab{padding:5px 14px;border:2px solid var(--ink);border-radius:999px;font-family:var(--font);font-size:11px;font-weight:800;cursor:pointer;background:var(--white);transition:background .1s}
+.ptab.active{background:var(--accent)}
+.palette-swatches{display:flex;gap:8px;flex-wrap:wrap}
+.pswatch{width:56px;height:56px;border-radius:12px;border:2.5px solid var(--ink);cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px;transition:transform .1s;flex-shrink:0}
+.pswatch:hover{transform:scale(1.08)}
+.pswatch span{font-size:9px;font-weight:800;font-family:var(--mono);padding:2px 4px;background:rgba(0,0,0,.4);color:#fff;border-radius:4px}
+
+.contrast-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.contrast-preview{flex:1;min-height:80px;border-radius:12px;border:2.5px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;min-width:180px}
+.contrast-score{flex-shrink:0;text-align:center}
+.score-num{font-size:32px;font-weight:900;letter-spacing:-0.04em}
+.score-badges{display:flex;gap:6px;margin-top:6px;justify-content:center;flex-wrap:wrap}
+.badge{padding:3px 10px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:0.05em;border:1.5px solid}
+.badge.pass{background:#d5f5e3;border-color:#2ecc71;color:#1a7a41}
+.badge.fail{background:#fadbd8;border-color:#e74c3c;color:#c0392b}
+.fg-bg-inputs{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.mini-color{display:flex;align-items:center;gap:8px;flex:1;min-width:140px}
+.mini-swatch{width:32px;height:32px;border-radius:8px;border:2px solid var(--ink);cursor:pointer;flex-shrink:0;position:relative}
+.mini-swatch input[type=color]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+@media(max-width:500px){
+  body{padding:0 12px 40px}
+  header{padding:18px 0 20px}
+  h1{font-size:24px}
+  .color-hero{flex-direction:column;padding:18px}
+  .color-swatch-big{width:100%;height:80px}
+  .section{padding:16px 18px}
+  .contrast-row{flex-direction:column;align-items:stretch}
+  .contrast-preview{min-width:0}
+  .fg-bg-inputs{flex-direction:column}
+  .pswatch{width:46px;height:46px}
+}
+</style>
+<meta property="og:image" content="https://hrz.lol/og/color.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://hrz.lol/og/color.png">
+</head>
+<body>
+<div class="page">
+  <header><a class="logo" href="//hrz.lol">hrz<span>.lol</span></a></header>
+  <h1>color</h1>
+  <div class="sub">hex / rgb / hsl converter, palette generator, contrast checker</div>
+
+  <div class="color-hero">
+    <div class="color-swatch-big" id="bigSwatch">
+      <input type="color" id="colorPicker" value="#f0c040">
+    </div>
+    <div class="color-inputs">
+      <div class="input-row">
+        <span class="input-label">hex</span>
+        <input class="color-input" id="hexInput" value="f0c040" maxlength="7">
+        <button class="copy-field" onclick="copyVal('#'+document.getElementById('hexInput').value,this)">copy</button>
+      </div>
+      <div class="input-row">
+        <span class="input-label">rgb</span>
+        <input class="color-input" id="rgbInput" value="rgb(240, 192, 64)" readonly>
+        <button class="copy-field" onclick="copyVal(document.getElementById('rgbInput').value,this)">copy</button>
+      </div>
+      <div class="input-row">
+        <span class="input-label">hsl</span>
+        <input class="color-input" id="hslInput" value="hsl(42, 86%, 60%)" readonly>
+        <button class="copy-field" onclick="copyVal(document.getElementById('hslInput').value,this)">copy</button>
+      </div>
+      <div class="input-row">
+        <span class="input-label">css</span>
+        <input class="color-input" id="cssVar" value="--color: #f0c040;" readonly>
+        <button class="copy-field" onclick="copyVal(document.getElementById('cssVar').value,this)">copy</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">palette</div>
+    <div class="palette-tabs" id="paletteTabs"></div>
+    <div class="palette-swatches" id="paletteSwatches"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">contrast checker (wcag)</div>
+    <div class="contrast-row">
+      <div class="contrast-preview" id="contrastPreview">sample text</div>
+      <div class="contrast-score">
+        <div class="score-num" id="contrastRatio">–</div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted)">:1 ratio</div>
+        <div class="score-badges" id="contrastBadges"></div>
+      </div>
+    </div>
+    <div class="fg-bg-inputs">
+      <div class="mini-color">
+        <div class="mini-swatch" id="fgSwatch" style="background:#111">
+          <input type="color" id="fgPicker" value="#111111" oninput="updateFg(this.value)">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:900;color:var(--muted)">foreground</div>
+          <input class="color-input" id="fgInput" value="#111111" style="width:120px" oninput="updateFg(this.value)">
+        </div>
+      </div>
+      <div class="mini-color">
+        <div class="mini-swatch" id="bgSwatch" style="background:#fff">
+          <input type="color" id="bgPicker" value="#ffffff" oninput="updateBg(this.value)">
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:900;color:var(--muted)">background</div>
+          <input class="color-input" id="bgInput" value="#ffffff" style="width:120px" oninput="updateBg(this.value)">
+        </div>
+      </div>
+      <button class="copy-field" style="align-self:flex-end;padding:8px 16px" onclick="useCurrent()">use current color as fg</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function hexToRgb(hex) {
+  hex = hex.replace(/^#/,'');
+  if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+  const n=parseInt(hex,16);
+  return {r:(n>>16)&255,g:(n>>8)&255,b:n&255};
+}
+function rgbToHsl(r,g,b) {
+  r/=255;g/=255;b/=255;
+  const max=Math.max(r,g,b),min=Math.min(r,g,b);
+  let h,s,l=(max+min)/2;
+  if(max===min){h=s=0;}
+  else{const d=max-min;s=l>.5?d/(2-max-min):d/(max+min);
+    switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;default:h=(r-g)/d+4;}h/=6;}
+  return {h:Math.round(h*360),s:Math.round(s*100),l:Math.round(l*100)};
+}
+function hslToRgb(h,s,l) {
+  s/=100;l/=100;
+  const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l);
+  const f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));
+  return {r:Math.round(f(0)*255),g:Math.round(f(8)*255),b:Math.round(f(4)*255)};
+}
+function hslToHex(h,s,l){const{r,g,b}=hslToRgb(h,s,l);return[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');}
+function rgbToHex(r,g,b){return[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');}
+function luminance({r,g,b}){const f=c=>{c/=255;return c<=0.03928?c/12.92:Math.pow((c+0.055)/1.055,2.4)};return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b);}
+function contrastRatio(l1,l2){const[hi,lo]=[Math.max(l1,l2),Math.min(l1,l2)];return((hi+0.05)/(lo+0.05)).toFixed(2);}
+
+let currentHex = 'f0c040';
+
+function setColor(hex) {
+  hex = hex.replace(/^#/,'').toLowerCase();
+  if(!/^[0-9a-f]{6}$/.test(hex)) return;
+  currentHex = hex;
+  const {r,g,b} = hexToRgb(hex);
+  const {h,s,l} = rgbToHsl(r,g,b);
+  document.getElementById('bigSwatch').style.background = '#'+hex;
+  document.getElementById('colorPicker').value = '#'+hex;
+  document.getElementById('hexInput').value = hex;
+  document.getElementById('rgbInput').value = `rgb(${r}, ${g}, ${b})`;
+  document.getElementById('hslInput').value = `hsl(${h}, ${s}%, ${l}%)`;
+  document.getElementById('cssVar').value   = `--color: #${hex};`;
+  renderPalette(h,s,l);
+  updateContrast();
+}
+
+const PALETTE_MODES = [
+  {label:'shades',    fn:(h,s,l)=>([90,75,60,45,30,15].map(lv=>hslToHex(h,s,lv)))},
+  {label:'tints',     fn:(h,s,l)=>([10,20,35,50,65,80].map(lv=>hslToHex(h,s,lv)))},
+  {label:'analogous', fn:(h,s,l)=>([h-40,h-20,h,h+20,h+40,h+60].map(hv=>hslToHex(((hv%360)+360)%360,s,l)))},
+  {label:'triad',     fn:(h,s,l)=>([h,h+120,h+240,h+60,h+180,h+300].map(hv=>hslToHex(((hv%360)+360)%360,s,l)))},
+  {label:'complement',fn:(h,s,l)=>([h,h+30,h+60,h+180,h+210,h+240].map(hv=>hslToHex(((hv%360)+360)%360,s,l)))},
+];
+
+let activeMode = 0;
+const tabsEl = document.getElementById('paletteTabs');
+PALETTE_MODES.forEach((m,i)=>{
+  const b=document.createElement('button');
+  b.className='ptab'+(i===0?' active':'');b.textContent=m.label;
+  b.onclick=()=>{activeMode=i;document.querySelectorAll('.ptab').forEach((x,j)=>x.classList.toggle('active',j===i));renderPalette(...currentHsl());};
+  tabsEl.appendChild(b);
+});
+
+function currentHsl(){const{r,g,b}=hexToRgb(currentHex);const{h,s,l}=rgbToHsl(r,g,b);return[h,s,l];}
+
+function renderPalette(h,s,l){
+  const colors=PALETTE_MODES[activeMode].fn(h,s,l);
+  document.getElementById('paletteSwatches').innerHTML=colors.map(c=>`
+    <div class="pswatch" style="background:#${c}" onclick="setColor('${c}')">
+      <span>#${c}</span>
+    </div>`).join('');
+}
+
+let fgHex='#111111', bgHex='#ffffff';
+function updateFg(v){fgHex=v.startsWith('#')?v:'#'+v;document.getElementById('fgSwatch').style.background=fgHex;document.getElementById('fgPicker').value=fgHex;document.getElementById('fgInput').value=fgHex;updateContrast();}
+function updateBg(v){bgHex=v.startsWith('#')?v:'#'+v;document.getElementById('bgSwatch').style.background=bgHex;document.getElementById('bgPicker').value=bgHex;document.getElementById('bgInput').value=bgHex;updateContrast();}
+function useCurrent(){updateFg('#'+currentHex);}
+
+function updateContrast(){
+  try{
+    const l1=luminance(hexToRgb(fgHex.replace('#','')));
+    const l2=luminance(hexToRgb(bgHex.replace('#','')));
+    const ratio=parseFloat(contrastRatio(l1,l2));
+    document.getElementById('contrastRatio').textContent=ratio.toFixed(2);
+    document.getElementById('contrastPreview').style.color=fgHex;
+    document.getElementById('contrastPreview').style.background=bgHex;
+    document.getElementById('contrastBadges').innerHTML=[
+      ['AA normal', ratio>=4.5],['AA large', ratio>=3],['AAA normal', ratio>=7],['AAA large', ratio>=4.5]
+    ].map(([l,p])=>`<span class="badge ${p?'pass':'fail'}">${l}</span>`).join('');
+  }catch{}
+}
+
+document.getElementById('colorPicker').addEventListener('input', e => setColor(e.target.value.slice(1)));
+document.getElementById('hexInput').addEventListener('input', e => {
+  const v = e.target.value.replace(/[^0-9a-fA-F]/g,'');
+  e.target.value = v;
+  if(v.length===6) setColor(v);
+});
+
+function copyVal(v,btn){navigator.clipboard.writeText(v);const o=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=o,1500);}
+
+setColor('f0c040');
+updateContrast();
+</script>
+</body>
+</html>
