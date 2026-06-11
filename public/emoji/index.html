@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emoji Picker & Search – hrz.lol</title>
+<meta name="description" content="Search emojis by name and tap to copy. Unicode characters too.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent;color:inherit;text-decoration:none}
+button{font-family:inherit;-webkit-tap-highlight-color:transparent}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow-x:hidden}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 48px}
+header{width:100%;max-width:860px;display:flex;align-items:center;justify-content:space-between;padding:24px 0 22px}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;color:var(--ink)}
+.logo span{color:var(--muted)}
+.nav-link{font-size:12px;font-weight:800;color:var(--muted);padding:4px 12px;border:2px solid var(--subtle);border-radius:999px}
+.nav-link:hover{border-color:var(--ink);color:var(--ink)}
+.wrap{width:100%;max-width:860px;display:flex;flex-direction:column;gap:16px}
+.search-card{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;box-shadow:3px 4px 0 var(--ink);overflow:hidden;position:sticky;top:8px;z-index:5}
+.search-row{display:flex;align-items:center;padding:14px 18px;gap:12px}
+.search-row .ic{color:var(--muted);flex-shrink:0}
+.search-row input{flex:1;border:none;background:transparent;font-family:var(--font);font-size:17px;font-weight:700;color:var(--ink);outline:none}
+.search-row input::placeholder{color:var(--subtle)}
+.cats{display:flex;gap:6px;padding:0 10px 10px;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cat{padding:6px 12px;border:2px solid var(--subtle);border-radius:999px;background:transparent;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;color:var(--muted);font-family:var(--font);text-transform:uppercase;letter-spacing:.05em}
+.cat:hover{border-color:var(--ink);color:var(--ink)}
+.cat.active{background:var(--ink);color:var(--white);border-color:var(--ink)}
+.grid-card{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;box-shadow:3px 4px 0 var(--ink);padding:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:4px}
+.cell{padding:10px 0;font-size:28px;background:transparent;border:none;border-radius:10px;cursor:pointer;transition:background .1s,transform .12s;position:relative;text-align:center}
+.cell:hover{background:var(--surface)}
+.cell:active{transform:scale(.92);background:var(--accent)}
+.cell.copied::after{content:'copied';position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--white);font-family:var(--font);font-size:9px;font-weight:800;padding:3px 8px;border-radius:6px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;animation:pop .2s ease}
+.empty{padding:48px;text-align:center;color:var(--muted);font-weight:700}
+.section-head{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:14px 6px 6px}
+.note{padding:12px 18px;font-size:12px;font-weight:600;color:var(--muted);background:var(--surface);border:2px solid var(--subtle);border-radius:12px;line-height:1.55}
+@keyframes pop{from{opacity:0;transform:translateX(-50%) translateY(4px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@media(max-width:520px){.grid{grid-template-columns:repeat(auto-fill,minmax(46px,1fr))}.cell{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+    <a class="nav-link" href="//hrz.lol">all tools</a>
+  </header>
+
+  <div class="wrap">
+    <div class="search-card">
+      <div class="search-row">
+        <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="text" placeholder="search emoji (e.g. fire, heart, cat)" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="cats" id="cats"></div>
+    </div>
+
+    <div class="grid-card">
+      <div id="content"><div class="empty">loading emojis…</div></div>
+    </div>
+
+    <div class="note">click any emoji to copy. all data stays in your browser.</div>
+  </div>
+</div>
+
+<script>
+let DATA = null;
+let activeCat = 'all';
+
+const CAT_LABELS = {
+  'Smileys & Emotion': 'Smileys',
+  'People & Body': 'People',
+  'Animals & Nature': 'Animals',
+  'Food & Drink': 'Food',
+  'Travel & Places': 'Travel',
+  'Activities': 'Activities',
+  'Objects': 'Objects',
+  'Symbols': 'Symbols',
+  'Flags': 'Flags',
+  'Component': 'Components',
+};
+
+async function init() {
+  try {
+    const r = await fetch('https://cdn.jsdelivr.net/npm/unicode-emoji-json@0.6.0/data-by-group.json');
+    const raw = await r.json();
+    DATA = {};
+    for (const g of raw) DATA[g.slug] = { name: g.name, emojis: g.emojis };
+  } catch (e) {
+    document.getElementById('content').innerHTML = '<div class="empty">failed to load emoji data</div>';
+    return;
+  }
+
+  const cats = document.getElementById('cats');
+  cats.innerHTML = '<button class="cat active" data-c="all">all</button>';
+  for (const slug of Object.keys(DATA)) {
+    const b = document.createElement('button');
+    b.className = 'cat';
+    b.dataset.c = slug;
+    b.textContent = DATA[slug].name;
+    cats.appendChild(b);
+  }
+  cats.querySelectorAll('.cat').forEach(b => b.addEventListener('click', () => {
+    cats.querySelectorAll('.cat').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    activeCat = b.dataset.c;
+    render();
+  }));
+
+  document.getElementById('q').addEventListener('input', render);
+  render();
+}
+
+function render() {
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const content = document.getElementById('content');
+  content.innerHTML = '';
+
+  const slugs = activeCat === 'all' ? Object.keys(DATA) : [activeCat];
+  let total = 0;
+
+  for (const slug of slugs) {
+    const group = DATA[slug];
+    if (!group) continue;
+    const filtered = q ? group.emojis.filter(e =>
+      (e.name || '').toLowerCase().includes(q) || (e.slug || '').toLowerCase().includes(q)
+    ) : group.emojis;
+    if (!filtered.length) continue;
+
+    if (slugs.length > 1) {
+      const head = document.createElement('div');
+      head.className = 'section-head';
+      head.textContent = group.name;
+      content.appendChild(head);
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    for (const e of filtered) {
+      const btn = document.createElement('button');
+      btn.className = 'cell';
+      btn.textContent = e.emoji;
+      btn.title = e.name;
+      btn.onclick = () => {
+        navigator.clipboard.writeText(e.emoji);
+        btn.classList.add('copied');
+        setTimeout(() => btn.classList.remove('copied'), 800);
+      };
+      grid.appendChild(btn);
+      total++;
+    }
+    content.appendChild(grid);
+  }
+
+  if (total === 0) {
+    content.innerHTML = `<div class="empty">no emoji matches "${escapeHtml(q)}"</div>`;
+  }
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+init();
+</script>
+<script src="/footer.js?v=3" defer></script>
+</body>
+</html>

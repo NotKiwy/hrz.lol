@@ -50,8 +50,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 20px 60px;
+  padding: 60px 20px 60px;
   gap: 48px;
 }
 
@@ -146,32 +145,6 @@ body {
   transform: translateX(4px);
 }
 
-footer {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--subtle);
-  animation: fadeUp .5s .18s ease both;
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
-  gap: 14px; row-gap: 8px;
-}
-footer .dot {
-  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-  background: var(--subtle); vertical-align: 1px; margin-right: 6px;
-}
-footer .dot.up    { background: #2bbf6a; box-shadow: 0 0 0 0 rgba(43,191,106,.6); animation: pulse 2.2s infinite; }
-footer .dot.down  { background: #d24747; }
-@keyframes pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(43,191,106,.55); }
-  70%  { box-shadow: 0 0 0 8px rgba(43,191,106,0); }
-  100% { box-shadow: 0 0 0 0 rgba(43,191,106,0); }
-}
-footer a {
-  color: var(--muted); text-decoration: none;
-  border-bottom: 1.5px dotted var(--subtle);
-  padding-bottom: 1px; transition: color .15s, border-color .15s;
-}
-footer a:hover { color: var(--ink); border-bottom-color: var(--ink); }
-footer .sep { color: var(--subtle); }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(18px); }
@@ -385,18 +358,45 @@ footer .sep { color: var(--subtle); }
       <div class="tool-desc">send http requests from the browser. custom headers, body, all methods.</div>
       <div class="tool-arrow">&#8594;</div>
     </a>
+    <a class="tool-card" href="//uuid.hrz.lol">
+      <div class="tool-tag">tool 24</div>
+      <div class="tool-name">uuid</div>
+      <div class="tool-desc">generate uuid v4, v7, nanoid, ulid. bulk and configurable formats.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//subnet.hrz.lol">
+      <div class="tool-tag">tool 25</div>
+      <div class="tool-name">subnet</div>
+      <div class="tool-desc">cidr calculator. network, broadcast, mask, host range, binary view.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//bcrypt.hrz.lol">
+      <div class="tool-tag">tool 26</div>
+      <div class="tool-name">bcrypt</div>
+      <div class="tool-desc">hash passwords with bcrypt. adjustable cost. verify hash and password.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//exif.hrz.lol">
+      <div class="tool-tag">tool 27</div>
+      <div class="tool-name">exif viewer</div>
+      <div class="tool-desc">inspect and strip photo metadata. gps, camera, software. all in-browser.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//ip.hrz.lol">
+      <div class="tool-tag">tool 28</div>
+      <div class="tool-name">what's my ip</div>
+      <div class="tool-desc">your public ip, country, reverse dns, user-agent. no logs.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
+    <a class="tool-card" href="//emoji.hrz.lol">
+      <div class="tool-tag">tool 29</div>
+      <div class="tool-name">emoji picker</div>
+      <div class="tool-desc">search and copy emoji by name. all unicode categories.</div>
+      <div class="tool-arrow">&#8594;</div>
+    </a>
   </div>
 
-  <footer>
-    <span>hrz.lol &middot; simple tools that just work</span>
-    <span class="sep">&middot;</span>
-    <a href="https://status.hrz.lol" target="_blank" rel="noopener"><span class="dot" id="statusDot"></span>status</a>
-    <span class="sep">&middot;</span>
-    <a href="https://github.com/NotKiwy/hrz.lol" target="_blank" rel="noopener">source</a>
-    <span class="sep">&middot;</span>
-    <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">agpl-3.0</a>
-  </footer>
-</div>
+  </div>
 <script>
 function flashTo(color, origin, url) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -413,17 +413,6 @@ function flashTo(color, origin, url) {
   setTimeout(() => { location.href = url; }, 460);
 }
 
-fetch('https://status.hrz.lol/api/status-page/heartbeat/main')
-  .then(r => r.json())
-  .then(d => {
-    const beats = d && d.heartbeatList ? Object.values(d.heartbeatList).flat() : [];
-    if (!beats.length) return;
-    const allUp = beats.every(h => h.status === 1);
-    const dot = document.getElementById('statusDot');
-    if (dot) dot.classList.add(allUp ? 'up' : 'down');
-  })
-  .catch(() => {});
-
 const fab = document.querySelector('.support-fab');
 if (fab) {
   fab.addEventListener('click', (e) => {
@@ -432,5 +421,6 @@ if (fab) {
   });
 }
 </script>
+<script src="/footer.js?v=3" defer></script>
 </body>
 </html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UUID Generator – UUID v4, v7, nanoid, ULID – hrz.lol</title>
+<meta name="description" content="Generate UUID v4, UUID v7, nanoid and ULID. Bulk generation, multiple formats. 100% in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent;color:inherit;text-decoration:none}
+button{font-family:inherit;-webkit-tap-highlight-color:transparent}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow-x:hidden}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 48px}
+header{width:100%;max-width:760px;display:flex;align-items:center;justify-content:space-between;padding:24px 0 28px;animation:fadeUp .4s ease both}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;color:var(--ink)}
+.logo span{color:var(--muted)}
+.nav-link{font-size:12px;font-weight:800;color:var(--muted);padding:4px 12px;border:2px solid var(--subtle);border-radius:999px;transition:border-color .15s,color .15s}
+.nav-link:hover{border-color:var(--ink);color:var(--ink)}
+.wrap{width:100%;max-width:760px;display:flex;flex-direction:column;gap:18px;animation:fadeUp .4s .06s ease both}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 18px;background:var(--white);border:2.5px solid var(--ink);border-radius:18px;box-shadow:3px 4px 0 var(--ink)}
+.seg{display:inline-flex;background:var(--surface);border:2px solid var(--ink);border-radius:10px;overflow:hidden}
+.seg button{padding:8px 14px;font-size:12px;font-weight:800;background:transparent;color:var(--ink);border:none;cursor:pointer;font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em;border-right:2px solid var(--ink)}
+.seg button:last-child{border-right:none}
+.seg button.active{background:var(--accent)}
+.qty{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.qty input{width:60px;padding:7px 10px;font-family:var(--mono);font-size:13px;font-weight:700;border:2px solid var(--ink);border-radius:8px;background:var(--white);text-align:center;outline:none}
+.gen-btn{margin-left:auto;padding:10px 22px;border:2.5px solid var(--ink);border-radius:10px;background:var(--accent);color:var(--ink);font-size:13px;font-weight:900;cursor:pointer;box-shadow:2px 3px 0 var(--ink);transition:transform .12s,box-shadow .12s}
+.gen-btn:hover{transform:translateY(-1px);box-shadow:3px 4px 0 var(--ink)}
+.gen-btn:active{transform:scale(.96);box-shadow:1px 2px 0 var(--ink)}
+.opts{display:flex;flex-wrap:wrap;gap:14px;padding:10px 18px;background:var(--surface);border:2px solid var(--subtle);border-radius:12px;font-size:12px;font-weight:700;color:var(--muted)}
+.opts label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.opts input[type=checkbox]{accent-color:var(--ink)}
+.opts input[type=text]{width:80px;padding:4px 8px;border:2px solid var(--subtle);border-radius:6px;font-family:var(--mono);font-size:12px;font-weight:700;background:var(--white);outline:none}
+.opts input[type=text]:focus{border-color:var(--ink)}
+.list-card{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;overflow:hidden;box-shadow:3px 4px 0 var(--ink)}
+.list-head{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:var(--surface);border-bottom:2px solid var(--ink)}
+.list-label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.head-actions{display:flex;gap:8px}
+.head-btn{padding:4px 12px;border:1.5px solid var(--subtle);border-radius:7px;background:transparent;font-size:10px;font-weight:800;color:var(--muted);cursor:pointer;letter-spacing:.04em;text-transform:uppercase}
+.head-btn:hover{border-color:var(--ink);color:var(--ink)}
+.list{font-family:var(--mono);font-size:13px;font-weight:600;line-height:1.9;padding:14px 18px;max-height:520px;overflow-y:auto;word-break:break-all}
+.row{display:flex;align-items:center;gap:10px;padding:4px 0;border-bottom:1px solid var(--surface)}
+.row:last-child{border-bottom:none}
+.row code{flex:1}
+.copy{padding:3px 9px;border:1.5px solid var(--subtle);border-radius:6px;background:transparent;font-family:var(--font);font-size:10px;font-weight:800;color:var(--muted);cursor:pointer;letter-spacing:.04em}
+.copy:hover{border-color:var(--ink);color:var(--ink)}
+.copy.ok{border-color:#2bbf6a;color:#2bbf6a}
+.info{font-size:12px;font-weight:600;color:var(--muted);padding:12px 18px;line-height:1.55;background:var(--surface);border:2px solid var(--subtle);border-radius:12px}
+.info b{color:var(--ink);font-weight:800}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:560px){.controls{flex-direction:column;align-items:stretch}.gen-btn{margin-left:0;width:100%}.opts{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+    <a class="nav-link" href="//hrz.lol">all tools</a>
+  </header>
+
+  <div class="wrap">
+    <div class="controls">
+      <div class="seg" id="kindSeg">
+        <button class="active" data-k="uuid4">UUID v4</button>
+        <button data-k="uuid7">UUID v7</button>
+        <button data-k="nanoid">nanoid</button>
+        <button data-k="ulid">ULID</button>
+      </div>
+      <div class="qty">qty <input type="number" id="qty" value="10" min="1" max="500"></div>
+      <button class="gen-btn" onclick="gen()">generate</button>
+    </div>
+
+    <div class="opts" id="opts">
+      <label><input type="checkbox" id="optUpper"> uppercase</label>
+      <label id="optDashWrap"><input type="checkbox" id="optNoDash"> no dashes</label>
+      <label id="optAlphaWrap" style="display:none">alphabet <input type="text" id="optAlpha" value="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"></label>
+      <label id="optLenWrap" style="display:none">length <input type="number" id="optLen" value="21" min="4" max="64" style="width:60px"></label>
+    </div>
+
+    <div class="list-card">
+      <div class="list-head">
+        <div class="list-label" id="listLabel">UUID v4 · 10</div>
+        <div class="head-actions">
+          <button class="head-btn" onclick="copyAll()">copy all</button>
+          <button class="head-btn" onclick="gen()">regenerate</button>
+        </div>
+      </div>
+      <div class="list" id="list"></div>
+    </div>
+
+    <div class="info">
+      <b>UUID v4</b> &ndash; random 122 bits, cryptographically secure.
+      <b>UUID v7</b> &ndash; timestamp-prefixed, sortable, ideal for database keys.
+      <b>nanoid</b> &ndash; smaller, URL-friendly, configurable alphabet.
+      <b>ULID</b> &ndash; lexicographically sortable, timestamp + randomness.
+    </div>
+  </div>
+</div>
+
+<script>
+let kind = 'uuid4';
+
+document.querySelectorAll('#kindSeg button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#kindSeg button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    kind = b.dataset.k;
+    document.getElementById('optDashWrap').style.display = (kind === 'uuid4' || kind === 'uuid7') ? '' : 'none';
+    document.getElementById('optAlphaWrap').style.display = kind === 'nanoid' ? '' : 'none';
+    document.getElementById('optLenWrap').style.display = kind === 'nanoid' ? '' : 'none';
+    gen();
+  });
+});
+
+function randBytes(n) {
+  const b = new Uint8Array(n);
+  crypto.getRandomValues(b);
+  return b;
+}
+
+function uuid4() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  const b = randBytes(16);
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = [...b].map(x => x.toString(16).padStart(2,'0')).join('');
+  return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
+}
+
+function uuid7() {
+  const ts = BigInt(Date.now());
+  const b = randBytes(10);
+  const hex = ts.toString(16).padStart(12,'0');
+  const rand = [...b].map(x => x.toString(16).padStart(2,'0')).join('');
+  let raw = hex + '7' + rand.slice(0,3) + '8' + rand.slice(4,7) + rand.slice(8);
+  raw = raw.slice(0, 32);
+  return `${raw.slice(0,8)}-${raw.slice(8,12)}-${raw.slice(12,16)}-${raw.slice(16,20)}-${raw.slice(20)}`;
+}
+
+function nanoid() {
+  const alpha = document.getElementById('optAlpha').value || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-';
+  const len = Math.max(4, Math.min(64, parseInt(document.getElementById('optLen').value) || 21));
+  let out = '';
+  const bytes = randBytes(len);
+  for (let i = 0; i < len; i++) out += alpha[bytes[i] % alpha.length];
+  return out;
+}
+
+function ulid() {
+  const CROCK = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+  let ts = Date.now();
+  let timeStr = '';
+  for (let i = 9; i >= 0; i--) {
+    timeStr = CROCK[ts % 32] + timeStr;
+    ts = Math.floor(ts / 32);
+  }
+  const b = randBytes(10);
+  let rnd = '';
+  for (let i = 0; i < 16; i++) rnd += CROCK[b[i % 10] % 32];
+  return timeStr + rnd;
+}
+
+function fmt(s) {
+  const noDash = document.getElementById('optNoDash').checked;
+  const upper = document.getElementById('optUpper').checked;
+  if ((kind === 'uuid4' || kind === 'uuid7') && noDash) s = s.replace(/-/g, '');
+  return upper ? s.toUpperCase() : s.toLowerCase();
+}
+
+function gen() {
+  const n = Math.max(1, Math.min(500, parseInt(document.getElementById('qty').value) || 10));
+  const fnMap = { uuid4, uuid7, nanoid, ulid };
+  const fn = fnMap[kind];
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const v = (kind === 'uuid4' || kind === 'uuid7') ? fmt(fn()) : fn();
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `<code></code><button class="copy">copy</button>`;
+    row.querySelector('code').textContent = v;
+    row.querySelector('.copy').onclick = (e) => {
+      navigator.clipboard.writeText(v).then(() => {
+        e.target.textContent = 'copied';
+        e.target.classList.add('ok');
+        setTimeout(() => { e.target.textContent = 'copy'; e.target.classList.remove('ok'); }, 1000);
+      });
+    };
+    list.appendChild(row);
+  }
+  document.getElementById('listLabel').textContent = `${kind} · ${n}`;
+}
+
+function copyAll() {
+  const all = [...document.querySelectorAll('#list code')].map(c => c.textContent).join('\n');
+  navigator.clipboard.writeText(all);
+}
+
+document.querySelectorAll('#opts input').forEach(el => el.addEventListener('change', gen));
+document.getElementById('qty').addEventListener('change', gen);
+gen();
+</script>
+<script src="/footer.js?v=3" defer></script>
+</body>
+</html>

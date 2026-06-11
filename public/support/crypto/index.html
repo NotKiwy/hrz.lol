@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>pay via crypto &mdash; hrz.lol</title>
-<meta name="description" content="Send crypto to support hrz.lol — BTC, ETH, SOL, TON, TRX.">
-<meta property="og:title" content="pay via crypto &mdash; hrz.lol">
+<title>pay via crypto &ndash; hrz.lol</title>
+<meta name="description" content="Send crypto to support hrz.lol – BTC, ETH, SOL, TON, TRX.">
+<meta property="og:title" content="pay via crypto &ndash; hrz.lol">
 <meta property="og:image" content="https://hrz.lol/og/home.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -239,7 +239,7 @@ footer a { text-decoration: underline; color: var(--muted); }
   <div class="view" id="viewSelect">
     <div class="head">
       <h1>pay via crypto</h1>
-      <p>pick a network &mdash; addresses go straight to my wallets. no middleman, 0% fees.</p>
+      <p>pick a network &ndash; addresses go straight to my wallets. no middleman, 0% fees.</p>
     </div>
     <div class="coin-list" id="coinList"></div>
   </div>
@@ -400,7 +400,7 @@ function showSelect() {
   viewSelect.style.animation = 'none';
   viewSelect.offsetHeight;
   viewSelect.style.animation = '';
-  document.title = 'pay via crypto — hrz.lol';
+  document.title = 'pay via crypto – hrz.lol';
   backBtn.setAttribute('href', '/support');
   backBtn.onclick = null;
   window.scrollTo(0, 0);
@@ -437,7 +437,7 @@ function showDetail(coin) {
     void el.offsetHeight;
     el.style.animation = '';
   });
-  document.title = `pay via ${coin.name} — hrz.lol`;
+  document.title = `pay via ${coin.name} – hrz.lol`;
 
   backBtn.setAttribute('href', '#');
   backBtn.onclick = (e) => {
@@ -459,5 +459,6 @@ function syncFromHash() {
 window.addEventListener('hashchange', syncFromHash);
 syncFromHash();
 </script>
+<script src="/footer.js?v=3" defer></script>
 </body>
 </html>

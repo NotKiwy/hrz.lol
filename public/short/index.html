@@ -120,7 +120,10 @@ header {
   font-size: 11px; font-weight: 900; transition: background .1s;
 }
 .max-clicks-toggle input:checked ~ .checkbox-ui { background: var(--accent); }
-.max-clicks-toggle input:checked ~ .checkbox-ui::after { content: '✓'; }
+.max-clicks-toggle input:checked ~ .checkbox-ui::after {
+  content: ''; display: block; width: 5px; height: 9px; margin: 1px auto 0;
+  border: solid var(--ink); border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
 .max-clicks-input-wrap { display: flex; align-items: center; gap: 6px; }
 .small-input {
   width: 64px; padding: 5px 10px; border: 2px solid var(--ink); border-radius: 8px;
@@ -537,5 +540,6 @@ document.getElementById('limitToggle').addEventListener('change', function() {
 
 renderHistory();
 </script>
+<script src="/footer.js?v=3" defer></script>
 </body>
 </html>

@@ -22,7 +22,7 @@ app.use(helmet({
             styleSrc:       ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
             fontSrc:        ["'self'", 'data:', 'https://fonts.gstatic.com'],
             imgSrc:         ["'self'", 'data:', 'blob:', 'https:'],
-            connectSrc:     ["'self'"],
+            connectSrc:     ["'self'", 'https://cdn.jsdelivr.net', 'https://status.hrz.lol'],
             objectSrc:      ["'none'"],
             scriptSrcAttr:  ["'unsafe-inline'"],
             baseUri:        ["'self'"],
@@ -84,6 +84,63 @@ const serveFavicon = (_req, res) => {
 app.get('/favicon.svg', serveFavicon);
 app.get('/favicon.ico', serveFavicon);
 
+const FOOTER_JS = `(function(){
+var css="html,body{height:auto !important;min-height:100%}"
++"body.hrz-shell{display:flex !important;flex-direction:column !important;align-items:stretch !important;justify-content:flex-start !important;padding:0 !important;min-height:100vh}"
++".hrz-main{flex:1 0 auto;display:flex;flex-direction:column;width:100%;box-sizing:border-box}"
++".hrz-footer{flex:0 0 auto;padding:40px 20px 24px;text-align:center;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;color:#777770;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px;row-gap:8px;animation:hrzFadeUp .5s .2s ease both;width:100%}"
++".hrz-footer .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#c4c2ba;vertical-align:1px;margin-right:6px}"
++".hrz-footer .dot.up{background:#2bbf6a;animation:hrzPulse 2.2s infinite}"
++".hrz-footer .dot.down{background:#d24747}"
++".hrz-footer a{color:#111;text-decoration:none;border-bottom:1.5px dotted #c4c2ba;padding-bottom:1px;transition:border-color .15s}"
++".hrz-footer a:hover{border-bottom-color:#111}"
++".hrz-footer .sep{color:#c4c2ba}"
++"@keyframes hrzPulse{0%{box-shadow:0 0 0 0 rgba(43,191,106,.55)}70%{box-shadow:0 0 0 8px rgba(43,191,106,0)}100%{box-shadow:0 0 0 0 rgba(43,191,106,0)}}"
++"@keyframes hrzFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}";
+var s=document.createElement('style');s.textContent=css;document.head.appendChild(s);
+
+var cs=getComputedStyle(document.body);
+var origAlign=cs.alignItems;
+var origJustify=cs.justifyContent;
+var origPadding=cs.padding;
+
+var wrap=document.createElement('div');
+wrap.className='hrz-main';
+wrap.style.cssText='align-items:'+origAlign+';justify-content:'+origJustify+';padding:'+origPadding;
+var kids=[];
+for(var i=0;i<document.body.childNodes.length;i++)kids.push(document.body.childNodes[i]);
+for(var j=0;j<kids.length;j++){
+  var n=kids[j];
+  if(n.nodeType===1 && getComputedStyle(n).position==='fixed')continue;
+  wrap.appendChild(n);
+}
+document.body.appendChild(wrap);
+document.body.classList.add('hrz-shell');
+
+var f=document.createElement('footer');f.className='hrz-footer';
+f.innerHTML='<span>hrz.lol &middot; simple tools that just work</span>'
++'<span class="sep">&middot;</span>'
++'<a href="https://status.hrz.lol" target="_blank" rel="noopener"><span class="dot" id="hrzStatusDot"></span>status</a>'
++'<span class="sep">&middot;</span>'
++'<a href="https://github.com/NotKiwy/hrz.lol" target="_blank" rel="noopener">source</a>'
++'<span class="sep">&middot;</span>'
++'<a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener">agpl-3.0</a>';
+document.body.appendChild(f);
+fetch('https://status.hrz.lol/api/status-page/heartbeat/main').then(function(r){return r.json()}).then(function(d){
+  var beats=d&&d.heartbeatList?Object.values(d.heartbeatList).flat():[];
+  if(!beats.length)return;
+  var allUp=beats.every(function(h){return h.status===1});
+  var dot=document.getElementById('hrzStatusDot');
+  if(dot)dot.classList.add(allUp?'up':'down');
+}).catch(function(){});
+})();`;
+
+app.get('/footer.js', (_req, res) => {
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(FOOTER_JS);
+});
+
 app.get('/health', async (_req, res) => {
     const result = { status: 'ok', uptime: Math.floor(process.uptime()), checks: {} };
     let mongoOk = false;
@@ -122,6 +179,12 @@ const DIRS = {
     ts:     path.join(__dirname, 'public/ts'),
     md:     path.join(__dirname, 'public/md'),
     color:  path.join(__dirname, 'public/color'),
+    uuid:   path.join(__dirname, 'public/uuid'),
+    subnet: path.join(__dirname, 'public/subnet'),
+    bcrypt: path.join(__dirname, 'public/bcrypt'),
+    exif:   path.join(__dirname, 'public/exif'),
+    ip:     path.join(__dirname, 'public/ip'),
+    emoji:  path.join(__dirname, 'public/emoji'),
     home:   path.join(__dirname, 'public/home'),
     support: path.join(__dirname, 'public/support'),
 };
@@ -151,6 +214,12 @@ function getService(hostname = '') {
     if (sub === 'hash')  return 'hash';
     if (sub === 'jwt')   return 'jwt';
     if (sub === 'enc')   return 'enc';
+    if (sub === 'uuid')  return 'uuid';
+    if (sub === 'subnet')return 'subnet';
+    if (sub === 'bcrypt')return 'bcrypt';
+    if (sub === 'exif')  return 'exif';
+    if (sub === 'ip')    return 'ip';
+    if (sub === 'emoji') return 'emoji';
     return 'home';
 }
 
@@ -175,6 +244,7 @@ app.use('/', require('./routes/meta'));
 app.use('/', require('./routes/ts'));
 app.use('/', require('./routes/md'));
 app.use('/', require('./routes/color'));
+app.use('/', require('./routes/ip'));
 app.use('/', require('./routes/whois'));
 app.use('/', require('./routes/req'));
 app.use('/', require('./routes/hash'));

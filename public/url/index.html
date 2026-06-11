@@ -117,7 +117,7 @@ function parseURL() {
   let u;
   try { u = new URL(raw); } catch {
     show('errSection');
-    document.getElementById('errMsg').textContent = 'invalid url — make sure to include the protocol (https://)';
+    document.getElementById('errMsg').textContent = 'invalid url – make sure to include the protocol (https://)';
     return;
   }
 
@@ -172,5 +172,6 @@ document.getElementById('urlInput').addEventListener('input', () => {
   window._urlT = setTimeout(parseURL, 300);
 });
 </script>
+<script src="/footer.js?v=3" defer></script>
 </body>
 </html>

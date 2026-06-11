@@ -243,10 +243,11 @@ document.getElementById('hexInput').addEventListener('input', e => {
   if(v.length===6) setColor(v);
 });
 
-function copyVal(v,btn){navigator.clipboard.writeText(v);const o=btn.textContent;btn.textContent='✓';setTimeout(()=>btn.textContent=o,1500);}
+function copyVal(v,btn){navigator.clipboard.writeText(v);const o=btn.textContent;btn.textContent='copied';setTimeout(()=>btn.textContent=o,1500);}
 
 setColor('f0c040');
 updateContrast();
 </script>
+<script src="/footer.js?v=3" defer></script>
 </body>
 </html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>bcrypt Hash & Verify – hrz.lol</title>
+<meta name="description" content="Hash passwords with bcrypt or verify a password against a hash. In-browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+a{-webkit-tap-highlight-color:transparent;color:inherit;text-decoration:none}
+button{font-family:inherit;-webkit-tap-highlight-color:transparent}
+:root{--bg:#faf8f3;--white:#fff;--ink:#111;--muted:#777770;--subtle:#c4c2ba;--surface:#f3f0e8;--accent:#f0c040;--font:'Nunito',sans-serif;--mono:'JetBrains Mono',monospace}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);overflow-x:hidden}
+.page{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 48px}
+header{width:100%;max-width:760px;display:flex;align-items:center;justify-content:space-between;padding:24px 0 28px;animation:fadeUp .4s ease both}
+.logo{font-size:22px;font-weight:900;letter-spacing:-0.04em;color:var(--ink)}
+.logo span{color:var(--muted)}
+.nav-link{font-size:12px;font-weight:800;color:var(--muted);padding:4px 12px;border:2px solid var(--subtle);border-radius:999px;transition:border-color .15s,color .15s}
+.nav-link:hover{border-color:var(--ink);color:var(--ink)}
+.wrap{width:100%;max-width:760px;display:flex;flex-direction:column;gap:18px;animation:fadeUp .4s .06s ease both}
+.tabs{display:flex;background:var(--surface);border:2.5px solid var(--ink);border-radius:14px;overflow:hidden}
+.tab{flex:1;padding:12px;background:transparent;border:none;font-family:var(--font);font-size:13px;font-weight:800;color:var(--muted);cursor:pointer;border-right:2px solid var(--ink);text-transform:uppercase;letter-spacing:.06em}
+.tab:last-child{border-right:none}
+.tab.active{background:var(--accent);color:var(--ink)}
+.card{background:var(--white);border:2.5px solid var(--ink);border-radius:18px;box-shadow:3px 4px 0 var(--ink);overflow:hidden}
+.card-head{padding:10px 18px;background:var(--surface);border-bottom:2px solid var(--ink);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.label{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.field{padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+.in{padding:12px 14px;border:2px solid var(--ink);border-radius:10px;font-family:var(--mono);font-size:14px;font-weight:600;background:var(--white);color:var(--ink);outline:none;width:100%}
+.in:focus{box-shadow:0 0 0 3px rgba(240,192,64,.4)}
+textarea.in{min-height:80px;resize:vertical;line-height:1.55;word-break:break-all}
+.cost-row{display:flex;align-items:center;gap:14px}
+.cost-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:6px;background:var(--surface);border:2px solid var(--ink);border-radius:6px;outline:none;padding:0}
+.cost-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);border:2.5px solid var(--ink);cursor:pointer;box-shadow:2px 2px 0 var(--ink);transition:transform .12s;margin-top:-9px}
+.cost-row input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.1)}
+.cost-row input[type=range]::-webkit-slider-thumb:active{transform:scale(.95);box-shadow:1px 1px 0 var(--ink)}
+.cost-row input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);border:2.5px solid var(--ink);cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.cost-row .v{font-family:var(--mono);font-size:14px;font-weight:800;min-width:24px;text-align:center}
+.cost-row .est{font-size:11px;font-weight:700;color:var(--muted);font-family:var(--mono)}
+.action-row{display:flex;gap:10px;padding:0 18px 16px}
+.btn{padding:11px 22px;border:2.5px solid var(--ink);border-radius:10px;background:var(--accent);font-size:13px;font-weight:900;cursor:pointer;color:var(--ink);box-shadow:2px 3px 0 var(--ink);transition:transform .12s,box-shadow .12s;flex:1}
+.btn:hover{transform:translateY(-1px);box-shadow:3px 4px 0 var(--ink)}
+.btn:active{transform:scale(.97);box-shadow:1px 2px 0 var(--ink)}
+.btn.outline{background:var(--white)}
+.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none;box-shadow:2px 3px 0 var(--ink)}
+.out-card{display:none}
+.out-card.show{display:block;animation:fadeUp .25s ease both}
+.out-row{padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--surface)}
+.out-row:last-child{border-bottom:none}
+.out-row code{flex:1;font-family:var(--mono);font-size:13px;font-weight:600;word-break:break-all;line-height:1.55}
+.copy{padding:5px 12px;border:1.5px solid var(--subtle);border-radius:7px;background:transparent;font-size:10px;font-weight:800;color:var(--muted);cursor:pointer;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
+.copy:hover{border-color:var(--ink);color:var(--ink)}
+.result-pill{display:inline-flex;align-items:center;gap:8px;padding:14px 18px;border-radius:12px;font-weight:800;font-size:14px}
+.result-pill.match{background:#e7f5ec;color:#1c7a3e;border:2px solid #1c7a3e}
+.result-pill.nomatch{background:#fbe7e7;color:#a13030;border:2px solid #a13030}
+.info{font-size:12px;font-weight:600;color:var(--muted);padding:12px 18px;line-height:1.55;background:var(--surface);border:2px solid var(--subtle);border-radius:12px}
+.info b{color:var(--ink);font-weight:800}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <a class="logo" href="//hrz.lol">hrz<span>.lol</span></a>
+    <a class="nav-link" href="//hrz.lol">all tools</a>
+  </header>
+
+  <div class="wrap">
+    <div class="tabs">
+      <button class="tab active" data-t="hash" onclick="switchTab(this)">Hash</button>
+      <button class="tab" data-t="verify" onclick="switchTab(this)">Verify</button>
+    </div>
+
+    <section id="hashTab">
+      <div class="card">
+        <div class="card-head"><div class="label">password</div></div>
+        <div class="field">
+          <input class="in" id="hashPw" type="text" placeholder="your password" autocomplete="off" spellcheck="false">
+          <div class="cost-row">
+            <span class="label">cost</span>
+            <input type="range" id="cost" min="4" max="14" value="10">
+            <span class="v" id="costV">10</span>
+            <span class="est" id="costEst">~100ms</span>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="btn" id="hashBtn" onclick="doHash()">generate hash</button>
+        </div>
+      </div>
+      <div class="card out-card" id="hashOut">
+        <div class="card-head"><div class="label" id="hashOutLabel">bcrypt hash</div></div>
+        <div class="out-row">
+          <code id="hashRes"></code>
+          <button class="copy" onclick="copyVal('hashRes', this)">copy</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="verifyTab" style="display:none">
+      <div class="card">
+        <div class="card-head"><div class="label">password</div></div>
+        <div class="field">
+          <input class="in" id="vPw" type="text" placeholder="your password" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="card-head" style="border-top:2px solid var(--ink)"><div class="label">bcrypt hash</div></div>
+        <div class="field">
+          <textarea class="in" id="vHash" placeholder="$2a$10$..." spellcheck="false" autocomplete="off"></textarea>
+        </div>
+        <div class="action-row">
+          <button class="btn" id="vBtn" onclick="doVerify()">verify</button>
+        </div>
+      </div>
+      <div id="vResult"></div>
+    </section>
+
+    <div class="info">
+      <b>bcrypt</b> &ndash; adaptive password hashing. cost <b>10</b> &asymp; 100ms, cost <b>12</b> &asymp; 400ms, cost <b>14</b> &asymp; 1.6s.
+      higher cost = slower bruteforce. industry recommends cost ≥ 10. nothing leaves your browser.
+    </div>
+  </div>
+</div>
+
+<script>
+const COST_ESTIMATES = { 4:'1ms',5:'2ms',6:'5ms',7:'10ms',8:'25ms',9:'50ms',10:'100ms',11:'200ms',12:'400ms',13:'800ms',14:'1.6s' };
+
+document.getElementById('cost').addEventListener('input', e => {
+  const v = +e.target.value;
+  document.getElementById('costV').textContent = v;
+  document.getElementById('costEst').textContent = '~' + COST_ESTIMATES[v];
+});
+
+function switchTab(btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const t = btn.dataset.t;
+  document.getElementById('hashTab').style.display = t === 'hash' ? '' : 'none';
+  document.getElementById('verifyTab').style.display = t === 'verify' ? '' : 'none';
+}
+
+async function doHash() {
+  const pw = document.getElementById('hashPw').value;
+  if (!pw) return;
+  const cost = +document.getElementById('cost').value;
+  const btn = document.getElementById('hashBtn');
+  btn.disabled = true; btn.textContent = 'hashing...';
+  const t0 = performance.now();
+  try {
+    const hash = await new Promise((resolve, reject) => {
+      dcodeIO.bcrypt.hash(pw, cost, (err, h) => err ? reject(err) : resolve(h));
+    });
+    const ms = (performance.now() - t0).toFixed(0);
+    document.getElementById('hashRes').textContent = hash;
+    document.getElementById('hashOutLabel').textContent = `bcrypt hash · ${ms}ms`;
+    document.getElementById('hashOut').classList.add('show');
+  } catch (e) {
+    document.getElementById('hashRes').textContent = 'error: ' + e.message;
+    document.getElementById('hashOut').classList.add('show');
+  }
+  btn.disabled = false; btn.textContent = 'generate hash';
+}
+
+async function doVerify() {
+  const pw = document.getElementById('vPw').value;
+  const hash = document.getElementById('vHash').value.trim();
+  if (!pw || !hash) return;
+  const btn = document.getElementById('vBtn');
+  btn.disabled = true; btn.textContent = 'verifying...';
+  try {
+    const match = await new Promise((resolve, reject) => {
+      dcodeIO.bcrypt.compare(pw, hash, (err, r) => err ? reject(err) : resolve(r));
+    });
+    document.getElementById('vResult').innerHTML = `<div class="result-pill ${match ? 'match' : 'nomatch'}">${match ? 'match' : 'no match'}</div>`;
+  } catch (e) {
+    document.getElementById('vResult').innerHTML = `<div class="result-pill nomatch">invalid hash: ${e.message}</div>`;
+  }
+  btn.disabled = false; btn.textContent = 'verify';
+}
+
+function copyVal(id, el) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent);
+  el.textContent = 'copied';
+  setTimeout(() => el.textContent = 'copy', 1000);
+}
+</script>
+<script src="/footer.js?v=3" defer></script>
+</body>
+</html>

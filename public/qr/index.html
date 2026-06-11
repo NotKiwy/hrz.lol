@@ -202,7 +202,7 @@ function generate() {
   img.onerror = () => {
     img.style.display = 'none';
     ph.style.display  = 'none';
-    err.textContent   = 'failed to generate — try shorter text';
+    err.textContent   = 'failed to generate – try shorter text';
     err.style.display = 'block';
     dl.style.display  = 'none';
     copy.disabled = true;
@@ -229,5 +229,6 @@ document.getElementById('qrInput').addEventListener('input', () => {
   debTimer = setTimeout(generate, 300);
 });
 </script>
+<script src="/footer.js?v=3" defer></script>
 </body>
 </html>

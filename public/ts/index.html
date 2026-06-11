@@ -143,7 +143,7 @@ function fmtDate(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.ge
 
 function copyText(t,btn){
   navigator.clipboard.writeText(t);
-  const orig=btn.textContent; btn.textContent='✓';
+  const orig=btn.textContent; btn.textContent='copied';
   setTimeout(()=>btn.textContent=orig,1500);
 }
 
@@ -236,5 +236,6 @@ document.getElementById('tsInput').addEventListener('keydown',e=>{if(e.key==='En
 document.getElementById('dateInput').addEventListener('keydown',e=>{if(e.key==='Enter')dateToTs()});
 document.getElementById('agoInput').addEventListener('keydown',e=>{if(e.key==='Enter')calcAgo()});
 </script>
+<script src="/footer.js?v=3" defer></script>
 </body>
 </html>

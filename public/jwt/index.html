@@ -129,7 +129,7 @@ function parse(token) {
     header  = JSON.parse(b64urlDecode(parts[0]));
     payload = JSON.parse(b64urlDecode(parts[1]));
   } catch {
-    setStatus('invalid', 'invalid', 'failed to decode — malformed token');
+    setStatus('invalid', 'invalid', 'failed to decode – malformed token');
     document.getElementById('sections').style.display = 'none';
     return;
   }
@@ -220,5 +220,6 @@ jwtInput.addEventListener('input', () => {
   debTimer = setTimeout(() => parse(jwtInput.value), 200);
 });
 </script>
+<script src="/footer.js?v=3" defer></script>
 </body>
 </html>

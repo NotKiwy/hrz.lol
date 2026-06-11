@@ -46,7 +46,10 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font); }
   font-size: 11px; font-weight: 900; transition: background .1s;
 }
 .field-toggle input:checked ~ .checkbox { background: var(--accent); }
-.field-toggle input:checked ~ .checkbox::after { content: '✓'; }
+.field-toggle input:checked ~ .checkbox::after {
+  content: ''; display: block; width: 5px; height: 9px;
+  border: solid var(--ink); border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
 .field-name { font-size: 13px; font-weight: 700; }
 
 .format-btns { display: flex; gap: 6px; }
@@ -353,5 +356,6 @@ if (sidebarToggle) {
   });
 }
 </script>
+
 </body>
 </html>
