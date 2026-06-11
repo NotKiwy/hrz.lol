@@ -4,7 +4,7 @@ const path       = require('path');
 const { Server } = require('socket.io');
 const helmet     = require('helmet');
 const rateLimit  = require('express-rate-limit');
-const { connect } = require('./db');
+const { connect, db } = require('./db');
 
 const app    = express();
 const server = http.createServer(app);
@@ -83,6 +83,20 @@ const serveFavicon = (_req, res) => {
 };
 app.get('/favicon.svg', serveFavicon);
 app.get('/favicon.ico', serveFavicon);
+
+app.get('/health', async (_req, res) => {
+    const result = { status: 'ok', uptime: Math.floor(process.uptime()), checks: {} };
+    let mongoOk = false;
+    try {
+        await db().command({ ping: 1 });
+        mongoOk = true;
+    } catch (_) {}
+    result.checks.mongo = mongoOk;
+    const mem = process.memoryUsage();
+    result.checks.memory_mb = Math.round(mem.rss / 1048576);
+    if (!mongoOk) result.status = 'degraded';
+    res.status(mongoOk ? 200 : 503).json(result);
+});
 
 const DIRS = {
     paste:  path.join(__dirname, 'public/paste'),
