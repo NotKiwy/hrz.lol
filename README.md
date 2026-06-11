@@ -11,7 +11,6 @@
 [![Stars](https://img.shields.io/github/stars/NotKiwy/hrz.lol?style=flat)](https://github.com/NotKiwy/hrz.lol/stargazers)
 [![Last commit](https://img.shields.io/github/last-commit/NotKiwy/hrz.lol)](https://github.com/NotKiwy/hrz.lol/commits)
 [![Issues](https://img.shields.io/github/issues/NotKiwy/hrz.lol)](https://github.com/NotKiwy/hrz.lol/issues)
-[![Repo size](https://img.shields.io/github/repo-size/NotKiwy/hrz.lol)](https://github.com/NotKiwy/hrz.lol)
 [![Uptime](https://img.shields.io/website?url=https%3A%2F%2Fhrz.lol&label=hrz.lol)](https://status.hrz.lol)
 
 </div>
