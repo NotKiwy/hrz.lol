@@ -160,46 +160,75 @@ function methodClass(m) {
   return 'method-OTHER';
 }
 
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = String(text);
+  return e;
+}
+
+function kvRow(k, v) {
+  const tr = document.createElement('tr');
+  tr.appendChild(el('td', null, k));
+  tr.appendChild(el('td', null, v));
+  return tr;
+}
+
 function renderList() {
   const list = document.getElementById('reqList');
   list.innerHTML = '';
   document.getElementById('count').textContent = requests.length;
   requests.forEach(r => {
-    const div = document.createElement('div');
-    div.className = 'req-item' + (r.id === activeId ? ' active' : '');
-    div.innerHTML = `
-      <div class="method-badge ${methodClass(r.method)}">${r.method}</div>
-      <div class="req-path">${r.path}</div>
-      <div class="req-time">${timeAgo(r.ts)}</div>`;
+    const div = el('div', 'req-item' + (r.id === activeId ? ' active' : ''));
+    div.appendChild(el('div', 'method-badge ' + methodClass(r.method), r.method));
+    div.appendChild(el('div', 'req-path', r.path));
+    div.appendChild(el('div', 'req-time', timeAgo(r.ts)));
     div.onclick = () => { activeId = r.id; renderList(); renderDetail(r); };
     list.appendChild(div);
   });
 }
 
+function section(title) {
+  const s = el('div', 'section');
+  s.appendChild(el('div', 'section-title', title));
+  return s;
+}
+
+function kvTable(entries) {
+  const t = el('table', 'kv-table');
+  for (const [k, v] of entries) t.appendChild(kvRow(k, v));
+  return t;
+}
+
 function renderDetail(r) {
   const d = document.getElementById('detail');
+  d.innerHTML = '';
+
+  const reqSec = section('request');
+  reqSec.appendChild(kvTable([
+    ['method', r.method],
+    ['path', r.path],
+    ['time', new Date(r.ts).toLocaleTimeString()],
+  ]));
+  d.appendChild(reqSec);
+
   const queryKeys = Object.keys(r.query || {});
-  d.innerHTML = `
-    <div class="section">
-      <div class="section-title">request</div>
-      <table class="kv-table">
-        <tr><td>method</td><td>${r.method}</td></tr>
-        <tr><td>path</td><td>${r.path}</td></tr>
-        <tr><td>time</td><td>${new Date(r.ts).toLocaleTimeString()}</td></tr>
-      </table>
-    </div>
-    ${queryKeys.length ? `<div class="section">
-      <div class="section-title">query params</div>
-      <table class="kv-table">${queryKeys.map(k=>`<tr><td>${k}</td><td>${r.query[k]}</td></tr>`).join('')}</table>
-    </div>` : ''}
-    <div class="section">
-      <div class="section-title">headers</div>
-      <table class="kv-table">${Object.entries(r.headers||{}).map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>
-    </div>
-    ${r.body !== null && r.body !== undefined ? `<div class="section">
-      <div class="section-title">body</div>
-      <div class="body-block">${typeof r.body === 'string' ? r.body : JSON.stringify(r.body, null, 2)}</div>
-    </div>` : ''}`;
+  if (queryKeys.length) {
+    const qSec = section('query params');
+    qSec.appendChild(kvTable(queryKeys.map(k => [k, String(r.query[k])])));
+    d.appendChild(qSec);
+  }
+
+  const hSec = section('headers');
+  hSec.appendChild(kvTable(Object.entries(r.headers || {}).map(([k, v]) => [k, String(v)])));
+  d.appendChild(hSec);
+
+  if (r.body !== null && r.body !== undefined) {
+    const bSec = section('body');
+    const bodyText = typeof r.body === 'string' ? r.body : JSON.stringify(r.body, null, 2);
+    bSec.appendChild(el('div', 'body-block', bodyText));
+    d.appendChild(bSec);
+  }
 }
 
 document.getElementById('clearBtn').onclick = () => {
