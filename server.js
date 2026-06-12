@@ -155,6 +155,19 @@ app.get('/health', async (_req, res) => {
     res.status(mongoOk ? 200 : 503).json(result);
 });
 
+app.get('/robots.txt', (_req, res) => {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile(path.join(__dirname, 'public/robots.txt'));
+});
+
+app.get('/sitemap.xml', (req, res, next) => {
+    if (req.hostname !== 'hrz.lol' && req.hostname !== 'www.hrz.lol') return next();
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile(path.join(__dirname, 'public/sitemap.xml'));
+});
+
 const DIRS = {
     paste:  path.join(__dirname, 'public/paste'),
     qr:     path.join(__dirname, 'public/qr'),

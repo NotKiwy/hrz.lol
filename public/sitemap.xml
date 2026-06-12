@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://hrz.lol/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://paste.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://lnk.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://conv.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://chat.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://hook.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://draw.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://img.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://fake.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://json.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://cron.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://diff.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://meta.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ts.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://md.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://color.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://qr.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://url.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://whois.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://chars.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://req.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://hash.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://jwt.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://enc.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://uuid.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://subnet.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://bcrypt.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://exif.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://ip.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://emoji.hrz.lol/</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+</urlset>

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /hook/*/stream
+Disallow: /socket.io/
+
+Sitemap: https://hrz.lol/sitemap.xml
